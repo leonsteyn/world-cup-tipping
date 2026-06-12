@@ -1,7 +1,7 @@
 [build]
   # Generates js/env-config.js from Netlify environment variables at build time.
   # This keeps Supabase keys out of git entirely.
-  command   = "printf 'const SUPABASE_URL=\"%s\";\nconst SUPABASE_ANON_KEY=\"%s\";\n' \"$SUPABASE_URL\" \"$SUPABASE_ANON_KEY\" > js/env-config.js"
+  command   = "node scripts/generate-env.js"
   publish   = "."
   functions = "netlify/functions"
 
