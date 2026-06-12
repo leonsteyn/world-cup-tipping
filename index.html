@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FIFA World Cup 2026 Tipping — Mrs Steyn's Games</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/flags.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:   #1d4ed8;
+      --blue-d: #1e3a8a;
+      --red:    #dc2626;
+      --gold:   #f59e0b;
+      --bg:     #f1f5f9;
+      --card:   #ffffff;
+      --text:   #1e293b;
+      --muted:  #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+      --shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Nav */
+    #nav { background: var(--blue-d); color: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1rem; height: 56px; }
+    .nav-home { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem; }
+    .nav-home:hover { color: #fff; }
+    .nav-home span { display: none; }
+    @media(min-width:600px) { .nav-home span { display: inline; } }
+    .nav-center { flex: 1; text-align: center; }
+    .nav-title { font-weight: 800; font-size: 1rem; color: #fff; }
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; padding: 0.3rem 0.6rem; border-radius: 8px; transition: background 0.15s; }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-primary-sm { background: var(--gold); color: #1e293b; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.8); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--blue-d) 0%, var(--blue) 60%, #2563eb 100%);
+      color: #fff;
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    .hero-emoji { font-size: 3.5rem; display: block; margin-bottom: 0.75rem; }
+    .hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 900; letter-spacing: -0.02em; }
+    .hero p { color: rgba(255,255,255,0.8); margin-top: 0.4rem; font-size: 1rem; }
+    .hero-cta { margin-top: 1.75rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .btn-white { background: #fff; color: var(--blue-d); font-weight: 800; padding: 0.65rem 1.4rem; border-radius: 10px; text-decoration: none; font-size: 0.95rem; border: none; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .btn-outline-white { background: transparent; color: #fff; font-weight: 700; padding: 0.65rem 1.4rem; border-radius: 10px; text-decoration: none; font-size: 0.95rem; border: 2px solid rgba(255,255,255,0.6); cursor: pointer; transition: background 0.15s; }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.15); }
+
+    /* How to play */
+    .how-to-play { background: #fff; border-bottom: 1px solid var(--border); }
+    .how-to-play-inner { max-width: 800px; margin: 0 auto; padding: 1.5rem 1.5rem; display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .htp-step { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: var(--muted); }
+    .htp-step strong { color: var(--text); }
+    .htp-divider { color: var(--border); font-size: 1.2rem; }
+    @media(max-width:480px) { .htp-divider { display: none; } .how-to-play-inner { gap: 0.75rem; } }
+
+    /* Main */
+    main { max-width: 800px; margin: 2.5rem auto; padding: 0 1.25rem 3rem; }
+
+    .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
+    .section-header h2 { font-size: 1.3rem; font-weight: 800; }
+    .section-header a { font-size: 0.88rem; color: var(--blue); text-decoration: none; }
+    .section-header a:hover { text-decoration: underline; }
+
+    /* Leaderboard */
+    .leaderboard-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th { background: var(--blue-d); color: #fff; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.8rem 1rem; text-align: left; }
+    .lb-table th:not(:first-child) { text-align: center; }
+    .lb-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; vertical-align: middle; }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table tr:hover td { background: #f8fafc; }
+
+    .rank-badge { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; }
+    .rank-1 { background: #fef3c7; color: #92400e; }
+    .rank-2 { background: #f1f5f9; color: #475569; }
+    .rank-3 { background: #fef0e6; color: #9a3412; }
+    .rank-n { background: #f1f5f9; color: var(--muted); }
+
+    .player-name { font-weight: 700; }
+    .player-you { color: var(--blue); }
+    .you-badge { background: #dbeafe; color: #1e40af; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 99px; margin-left: 0.4rem; }
+
+    .points-cell { text-align: center; font-weight: 800; font-size: 1.05rem; color: var(--blue-d); }
+    .picks-cell { text-align: center; color: var(--muted); font-size: 0.9rem; }
+    .pct-cell { text-align: center; font-size: 0.9rem; color: var(--muted); }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+
+    .loading { text-align: center; padding: 2.5rem; color: var(--muted); }
+
+    /* Stats bar */
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; text-align: center; }
+    .stat-value { font-size: 1.8rem; font-weight: 900; color: var(--blue-d); }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 2rem 1rem; }
+  </style>
+</head>
+<body>
+
+<nav id="nav"></nav>
+
+<div class="hero">
+  <span class="hero-emoji">⚽</span>
+  <h1>FIFA World Cup 2026 Tipping</h1>
+  <p id="hero-sub">USA · Canada · Mexico &nbsp;·&nbsp; 11 Jun – 19 Jul 2026</p>
+  <div class="hero-cta" id="hero-cta">
+    <a href="matches.html" class="btn-white">📅 View Fixtures &amp; Tip</a>
+    <a href="auth.html" class="btn-outline-white">Register / Login</a>
+  </div>
+</div>
+
+<div class="how-to-play">
+  <div class="how-to-play-inner">
+    <div class="htp-step">📝 <span><strong>Register</strong> for free</span></div>
+    <div class="htp-divider">→</div>
+    <div class="htp-step">⚽ <span><strong>Pick</strong> a winner before kick-off</span></div>
+    <div class="htp-divider">→</div>
+    <div class="htp-step">🎯 <span><strong>+1 point</strong> for each correct tip</span></div>
+    <div class="htp-divider">→</div>
+    <div class="htp-step">🏆 <span><strong>Climb</strong> the leaderboard</span></div>
+  </div>
+</div>
+
+<main>
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-players">—</div>
+      <div class="stat-label">Players</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-played">—</div>
+      <div class="stat-label">Games Played</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-remaining">—</div>
+      <div class="stat-label">Games Remaining</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <h2>🏆 Leaderboard</h2>
+    <a href="matches.html">View fixtures →</a>
+  </div>
+
+  <div class="leaderboard-card">
+    <div id="lb-content" class="loading">Loading leaderboard…</div>
+  </div>
+</main>
+
+<footer>Made with ☀️ in Australia &nbsp;·&nbsp; Part of <a href="https://mrssteyns-games.netlify.app" style="color:inherit">Mrs Steyn's Games</a></footer>
+
+<script src="js/supabase-client.js"></script>
+<script>
+(async () => {
+  await renderNav('leaderboard');
+
+  // Update hero CTA if logged in
+  const user = await getUser();
+  if (user) {
+    document.getElementById('hero-cta').innerHTML = `
+      <a href="matches.html" class="btn-white">📅 View Fixtures &amp; Tip</a>
+      <a href="profile.html" class="btn-outline-white">👤 My Picks</a>
+    `;
+  }
+
+  // Load stats
+  const [{ count: playerCount }, { data: matches }] = await Promise.all([
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('matches').select('status').eq('tournament_code', TOURNAMENT.code),
+  ]);
+
+  document.getElementById('stat-players').textContent = playerCount ?? '—';
+  if (matches) {
+    const played = matches.filter(m => m.status === 'FINISHED').length;
+    document.getElementById('stat-played').textContent = played;
+    document.getElementById('stat-remaining').textContent = matches.length - played;
+  }
+
+  // Load leaderboard
+  const { data: lb, error } = await supabase
+    .from('leaderboard')
+    .select('*')
+    .order('points', { ascending: false })
+    .order('total_picks', { ascending: false });
+
+  const container = document.getElementById('lb-content');
+
+  if (error || !lb || lb.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">🏆</span>
+        <p>No players yet — <a href="auth.html">register</a> to be first on the board!</p>
+      </div>`;
+    return;
+  }
+
+  const myId = user?.id;
+  const rows = lb.map((p, i) => {
+    const rank = i + 1;
+    const isMe = p.id === myId;
+    const badgeClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
+    const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+    const pct = p.settled_picks > 0 ? Math.round((p.points / p.settled_picks) * 100) + '%' : '—';
+    return `
+      <tr>
+        <td><span class="rank-badge ${badgeClass}">${rankEmoji}</span></td>
+        <td class="player-name${isMe ? ' player-you' : ''}">
+          ${escHtml(p.display_name)}${isMe ? '<span class="you-badge">YOU</span>' : ''}
+        </td>
+        <td class="points-cell">${p.points}</td>
+        <td class="picks-cell">${p.total_picks}</td>
+        <td class="pct-cell">${pct}</td>
+      </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Player</th>
+          <th>Points</th>
+          <th>Picks</th>
+          <th>Accuracy</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+})();
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

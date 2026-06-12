@@ -1,0 +1,23 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Make the sync function available at /.netlify/functions/sync-matches
+# You can also call it via a Netlify scheduled function for automatic syncing.
+# To run on a schedule, add:
+# [[plugins]]
+#   package = "@netlify/plugin-scheduled-functions"
+# ...and add a schedule property to the function export.
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
