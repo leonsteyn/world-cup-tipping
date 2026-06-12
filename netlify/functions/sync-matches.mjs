@@ -27,6 +27,7 @@ export default async function handler(req, context) {
     FOOTBALL_DATA_API_KEY,
     SUPABASE_URL,
     SUPABASE_SERVICE_KEY,
+    SYNC_SECRET,
     TOURNAMENT_CODE  = 'WC2026',
     COMPETITION_CODE = 'WC',
   } = process.env;
@@ -36,6 +37,18 @@ export default async function handler(req, context) {
       JSON.stringify({ error: 'Missing environment variables. See SETUP.md.' }),
       { status: 500, headers }
     );
+  }
+
+  // If SYNC_SECRET is set, server-to-server calls (e.g. scheduled function) must
+  // pass it via the x-sync-secret header. Browser calls from the site are always
+  // allowed — the 5-minute cache prevents API abuse from that direction.
+  if (SYNC_SECRET) {
+    const origin = req.headers.get('origin') ?? '';
+    const isFromOurSite = origin.includes('netlify.app') || origin.includes('mrssteyn');
+    const providedSecret = req.headers.get('x-sync-secret');
+    if (!isFromOurSite && providedSecret !== SYNC_SECRET) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+    }
   }
 
   // ── Check last sync time ────────────────────────────────────────────────

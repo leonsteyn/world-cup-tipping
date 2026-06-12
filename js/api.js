@@ -49,12 +49,39 @@ const SB = (() => {
     return { user: data.user, error: null };
   }
 
+  async function refreshSession() {
+    const session = getSession();
+    if (!session?.refresh_token) return null;
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: session.refresh_token }),
+    });
+    if (!res.ok) { saveSession(null); return null; }
+    const data = await res.json();
+    saveSession(data);
+    return data.access_token;
+  }
+
   async function getUser() {
     const token = getToken();
     if (!token) return null;
+
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
     });
+
+    // Token expired — try to refresh once automatically
+    if (res.status === 401) {
+      const newToken = await refreshSession();
+      if (!newToken) return null;
+      const retry = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${newToken}` },
+      });
+      if (!retry.ok) { saveSession(null); return null; }
+      return await retry.json();
+    }
+
     if (!res.ok) { saveSession(null); return null; }
     return await res.json();
   }
