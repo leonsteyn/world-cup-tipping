@@ -99,7 +99,7 @@ export default async function handler(req, context) {
 
   // ── Upsert into Supabase ────────────────────────────────────────────────
   const upsertRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/matches`,
+    `${SUPABASE_URL}/rest/v1/matches?on_conflict=external_id`,
     {
       method: 'POST',
       headers: {
