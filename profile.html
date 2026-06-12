@@ -4,8 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Picks — World Cup 2026 Tipping</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  
   <script src="js/env-config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/config.js"></script>
   <script src="js/flags.js"></script>
   <style>
@@ -136,8 +137,8 @@ async function init() {
 
   const [profile, picksRes, leaderboardRes] = await Promise.all([
     getProfile(user.id),
-    supabase.from('picks').select(`*, matches(*)`).eq('player_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('leaderboard').select('*').order('points', { ascending: false }),
+    SB.get('picks', `select=*,matches(*)&player_id=eq.${user.id}&order=created_at.desc`),
+    SB.get('leaderboard', 'order=points.desc'),
   ]);
 
   // Profile header

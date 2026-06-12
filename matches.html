@@ -4,8 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fixtures — World Cup 2026 Tipping</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  
   <script src="js/env-config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/config.js"></script>
   <script src="js/flags.js"></script>
   <style>
@@ -167,9 +168,9 @@ async function loadData() {
   syncMatches(false);
 
   const [matchesRes, picksRes] = await Promise.all([
-    supabase.from('matches').select('*').eq('tournament_code', TOURNAMENT.code).order('match_date'),
+    SB.get('matches', `tournament_code=eq.${TOURNAMENT.code}&order=match_date`),
     currentUser
-      ? supabase.from('picks').select('*').eq('player_id', currentUser.id)
+      ? SB.get('picks', `player_id=eq.${currentUser.id}`)
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -333,9 +334,9 @@ async function submitPick(matchId, pick) {
   myPicks[matchId] = pick;
   renderMatches();
 
-  const { error } = await supabase.from('picks').upsert(
+  const { error } = await SB.upsert('picks',
     { player_id: currentUser.id, match_id: matchId, pick, updated_at: new Date().toISOString() },
-    { onConflict: 'player_id,match_id' }
+    'player_id,match_id'
   );
 
   if (error) {
@@ -352,7 +353,7 @@ async function syncMatches(showFeedback = true) {
     const res = await fetch('/.netlify/functions/sync-matches');
     if (res.ok && showFeedback) {
       // Reload matches after sync
-      const { data } = await supabase.from('matches').select('*').eq('tournament_code', TOURNAMENT.code).order('match_date');
+      const { data } = await SB.get('matches', `tournament_code=eq.${TOURNAMENT.code}&order=match_date`);
       if (data) {
         allMatches = data;
         renderMatches();

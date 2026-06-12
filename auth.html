@@ -4,8 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register / Login — World Cup 2026 Tipping</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  
   <script src="js/env-config.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/config.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,15 +130,13 @@
 
 <footer>Part of <a href="https://mrssteyns-games.netlify.app" style="color:inherit">Mrs Steyn's Games</a></footer>
 
+<script src="js/api.js"></script>
 <script>
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // Redirect if already logged in
-_supabase.auth.getUser().then(({ data: { user } }) => {
+SB.getUser().then(user => {
   if (user) window.location.href = 'matches.html';
 });
 
-// Show register tab if hash = #register, login if #login
 if (location.hash === '#login') switchTab('login');
 
 function switchTab(tab) {
@@ -166,17 +165,16 @@ async function register() {
   const btn = document.querySelector('#panel-register .btn-submit');
   btn.disabled = true; btn.textContent = 'Creating account…';
 
-  const { data, error } = await _supabase.auth.signUp({ email, password: pass });
+  const { user, error } = await SB.signUp(email, pass);
   if (error) {
-    showMsg('reg-msg', error.message, 'error');
+    showMsg('reg-msg', error, 'error');
     btn.disabled = false; btn.textContent = 'Create Account →';
     return;
   }
 
-  // Create profile
-  const userId = data.user?.id;
-  if (userId) {
-    await _supabase.from('profiles').insert({ id: userId, display_name: name });
+  // Create profile row
+  if (user?.id) {
+    await SB.insert('profiles', { id: user.id, display_name: name });
   }
 
   showMsg('reg-msg', '🎉 Account created! Redirecting to fixtures…', 'success');
@@ -191,16 +189,15 @@ async function login() {
   const btn = document.querySelector('#panel-login .btn-submit');
   btn.disabled = true; btn.textContent = 'Logging in…';
 
-  const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+  const { error } = await SB.signIn(email, pass);
   if (error) {
-    showMsg('login-msg', error.message, 'error');
+    showMsg('login-msg', error, 'error');
     btn.disabled = false; btn.textContent = 'Login →';
     return;
   }
   window.location.href = 'matches.html';
 }
 
-// Allow Enter key to submit
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const active = document.querySelector('.panel.active');

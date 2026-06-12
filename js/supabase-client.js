@@ -1,37 +1,26 @@
-// Initialise the Supabase client (config.js must be loaded first)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Shared helpers used by all pages.
+// Depends on js/api.js being loaded first.
 
-// ─── Auth helpers ──────────────────────────────────────────────────────────
-
-async function getUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
-async function getProfile(userId) {
-  const { data } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+async function getUser()           { return SB.getUser(); }
+async function getProfile(userId)  {
+  const { data } = await SB.getOne('profiles', `id=eq.${userId}`);
   return data;
 }
-
 async function signOut() {
-  await supabase.auth.signOut();
+  await SB.signOut();
   window.location.href = 'index.html';
 }
 
-// ─── Nav ───────────────────────────────────────────────────────────────────
+// ── Nav ───────────────────────────────────────────────────────────────────
 
 async function renderNav(activePage) {
   const user = await getUser();
-  const nav = document.getElementById('nav');
+  const nav  = document.getElementById('nav');
   if (!nav) return;
 
   const pages = [
     { href: 'index.html',   label: '🏆 Leaderboard', key: 'leaderboard' },
-    { href: 'matches.html', label: '📅 Fixtures',     key: 'fixtures' },
+    { href: 'matches.html', label: '📅 Fixtures',     key: 'fixtures'    },
   ];
 
   const links = pages.map(p =>
