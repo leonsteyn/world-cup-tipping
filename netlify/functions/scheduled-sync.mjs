@@ -6,8 +6,8 @@
  *
  * Schedule: "0 * * * *" = top of every hour (UTC)
  * During the World Cup group stage there are ~6 matches/day so
- * hourly is plenty. You can tighten to "*/30 * * * *" (every 30 min)
- * if you want faster result updates during busy match days.
+ * hourly is plenty. To run every 30 min instead, change the schedule
+ * to "0,30 * * * *"
  */
 
 export const config = {
