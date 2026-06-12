@@ -1,0 +1,12 @@
+# Generated at build time by Netlify — never commit
+js/env-config.js
+
+# Local secrets
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Node (if using netlify dev locally)
+node_modules/

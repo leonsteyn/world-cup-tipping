@@ -1,7 +1,7 @@
 // ─── Supabase connection ───────────────────────────────────────────────────
-// Replace these with your project values from https://supabase.com/dashboard
-const SUPABASE_URL     = 'https://blxqvbtsrwjjnatflfrz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJseHF2YnRzcndqam5hdGZsZnJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjEwMDksImV4cCI6MjA5NjgzNzAwOX0.ICrMj2ZpWSlKPM0QU79WuYARVWk68URlPBvg-GKq3kg';
+// SUPABASE_URL and SUPABASE_ANON_KEY are injected at build time by Netlify
+// into js/env-config.js (generated from environment variables, never committed).
+// See netlify.toml [build] command and SETUP.md for details.
 
 // ─── Tournament config ─────────────────────────────────────────────────────
 // Swap this object to reuse the app for a different tournament.

@@ -1,16 +1,12 @@
 [build]
-  publish = "."
+  # Generates js/env-config.js from Netlify environment variables at build time.
+  # This keeps Supabase keys out of git entirely.
+  command   = "printf 'const SUPABASE_URL=\"%s\";\nconst SUPABASE_ANON_KEY=\"%s\";\n' \"$SUPABASE_URL\" \"$SUPABASE_ANON_KEY\" > js/env-config.js"
+  publish   = "."
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
-
-# Make the sync function available at /.netlify/functions/sync-matches
-# You can also call it via a Netlify scheduled function for automatic syncing.
-# To run on a schedule, add:
-# [[plugins]]
-#   package = "@netlify/plugin-scheduled-functions"
-# ...and add a schedule property to the function export.
 
 [[headers]]
   for = "/*.html"
