@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Group Standings — World Cup 2026 Tipping</title>
+  <script src="js/env-config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/flags.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1d4ed8; --blue-d: #1e3a8a; --gold: #f59e0b;
+      --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #64748b;
+      --border: #e2e8f0; --radius: 16px; --green: #16a34a; --red: #dc2626;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Nav */
+    #nav { background: var(--blue-d); color: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1rem; height: 56px; }
+    .nav-home { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; white-space: nowrap; }
+    .nav-home:hover { color: #fff; }
+    .nav-center { flex: 1; text-align: center; }
+    .nav-title { font-weight: 800; font-size: 1rem; color: #fff; }
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; padding: 0.3rem 0.6rem; border-radius: 8px; transition: background 0.15s; }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-primary-sm { background: var(--gold); color: #1e293b; border: none; padding: 0.4rem 0.9rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.8); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+    .page-header { background: linear-gradient(135deg, var(--blue-d), var(--blue)); color: #fff; padding: 1.75rem 1.5rem; text-align: center; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 900; }
+    .page-header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 0.3rem; }
+
+    /* Group filter tabs */
+    .group-filter { max-width: 1100px; margin: 1.25rem auto 0; padding: 0 1.25rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .gf-btn { padding: 0.35rem 0.8rem; border-radius: 99px; border: 1.5px solid var(--border); background: var(--card); font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .gf-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .gf-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+    main { max-width: 1100px; margin: 1.25rem auto 3rem; padding: 0 1.25rem; }
+
+    .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+
+    /* Group card */
+    .group-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+    .group-title { background: var(--blue-d); color: #fff; padding: 0.7rem 1rem; font-weight: 800; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
+    .group-played { font-size: 0.75rem; font-weight: 600; opacity: 0.75; }
+
+    /* Standings table */
+    .standings-table { width: 100%; border-collapse: collapse; }
+    .standings-table th { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0.5rem 0.6rem; text-align: center; border-bottom: 1px solid var(--border); }
+    .standings-table th:first-child { text-align: left; padding-left: 0.75rem; }
+    .standings-table td { padding: 0.55rem 0.6rem; font-size: 0.88rem; text-align: center; border-bottom: 1px solid #f8fafc; }
+    .standings-table td:first-child { text-align: left; padding-left: 0.75rem; }
+    .standings-table tr:last-child td { border-bottom: none; }
+    .standings-table tr.qualified td { background: #f0fdf4; }
+    .standings-table tr.qualified-third td { background: #fefce8; }
+    .standings-table tr.eliminated td { background: #fafafa; opacity: 0.7; }
+
+    .team-cell { display: flex; align-items: center; gap: 0.5rem; }
+    .team-cell .flag { font-size: 1.2rem; line-height: 1; }
+    .team-cell .name { font-weight: 700; font-size: 0.88rem; }
+    .team-cell .rank-tag { font-size: 0.68rem; color: var(--muted); background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 99px; }
+
+    .pos-badge { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.72rem; }
+    .pos-1, .pos-2 { background: #dbeafe; color: #1e40af; }
+    .pos-best3 { background: #fef9c3; color: #854d0e; }
+    .pos-4 { background: #f1f5f9; color: var(--muted); }
+
+    .pts-cell { font-weight: 800; color: var(--blue-d); }
+    .gd-pos { color: var(--green); font-weight: 700; }
+    .gd-neg { color: var(--red); font-weight: 700; }
+
+    /* Form dots */
+    .form-dots { display: flex; gap: 2px; justify-content: center; }
+    .form-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .form-w { background: var(--green); }
+    .form-d { background: var(--gold); }
+    .form-l { background: var(--red); }
+    .form-p { background: #e2e8f0; }
+
+    /* Recent results */
+    .group-matches { border-top: 1px solid var(--border); }
+    .group-match { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; font-size: 0.8rem; border-bottom: 1px solid #f8fafc; }
+    .group-match:last-child { border-bottom: none; }
+    .gm-teams { display: flex; align-items: center; gap: 0.4rem; flex: 1; }
+    .gm-team { display: flex; align-items: center; gap: 0.3rem; min-width: 0; }
+    .gm-team .flag { font-size: 0.95rem; }
+    .gm-team .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+    .gm-score { font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 6px; background: #f1f5f9; font-size: 0.82rem; margin: 0 0.4rem; white-space: nowrap; }
+    .gm-score.finished { background: var(--blue-d); color: #fff; }
+    .gm-date { font-size: 0.72rem; color: var(--muted); white-space: nowrap; margin-left: 0.5rem; }
+
+    .loading { text-align: center; padding: 4rem; color: var(--muted); }
+    .legend { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 2rem 1rem; }
+  </style>
+</head>
+<body>
+
+<nav id="nav"></nav>
+
+<div class="page-header">
+  <h1>🏅 Group Standings</h1>
+  <p>Top 2 from each group + 8 best third-placed teams advance to the Round of 32</p>
+</div>
+
+<div class="group-filter" id="group-filter">
+  <button class="gf-btn active" onclick="setGroupFilter('all')">All Groups</button>
+</div>
+
+<main>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#dbeafe"></div> Qualified (1st/2nd)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fef9c3"></div> Possible best 3rd</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f1f5f9"></div> Eliminated</div>
+  </div>
+  <div id="groups-container" class="loading">Loading group standings…</div>
+</main>
+
+<footer>Made with ☀️ in Australia &nbsp;·&nbsp; Part of <a href="https://mrssteyns-games.netlify.app" style="color:inherit">Mrs Steyn's Games</a></footer>
+
+<script src="js/supabase-client.js"></script>
+<script>
+let allMatches = [];
+let currentFilter = 'all';
+
+async function init() {
+  await renderNav('groups');
+  const { data } = await SB.get('matches',
+    `tournament_code=eq.${TOURNAMENT.code}&stage=eq.GROUP_STAGE&order=match_date`
+  );
+  allMatches = data ?? [];
+  buildFilterButtons();
+  render();
+}
+
+function buildFilterButtons() {
+  const groups = [...new Set(allMatches.map(m => m.group_name).filter(Boolean))].sort();
+  const bar = document.getElementById('group-filter');
+  groups.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'gf-btn';
+    b.textContent = g;
+    b.onclick = () => setGroupFilter(g);
+    bar.appendChild(b);
+  });
+}
+
+function setGroupFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.gf-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === f || (f === 'all' && b.textContent === 'All Groups'));
+  });
+  render();
+}
+
+function render() {
+  const container = document.getElementById('groups-container');
+  const groups = groupByKey(allMatches, 'group_name');
+  const groupNames = Object.keys(groups).filter(g => g && g !== 'null').sort();
+  const filtered = currentFilter === 'all' ? groupNames : groupNames.filter(g => g === currentFilter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="loading">No group data yet. Fixtures load after the tournament begins.</div>';
+    return;
+  }
+
+  container.className = 'groups-grid';
+  container.innerHTML = filtered.map(g => groupCard(g, groups[g])).join('');
+}
+
+function groupCard(groupName, matches) {
+  const standings = calcStandings(matches);
+  const finished  = matches.filter(m => m.status === 'FINISHED').length;
+  const total     = matches.length;
+
+  const rows = standings.map((t, i) => {
+    const pos  = i + 1;
+    const gd   = t.gf - t.ga;
+    const gdStr = gd > 0 ? `<span class="gd-pos">+${gd}</span>` : gd < 0 ? `<span class="gd-neg">${gd}</span>` : gd;
+    const flag = getFlag(t.name);
+    const rank = rankLabel(t.name);
+    let rowClass = '';
+    if (pos <= 2) rowClass = 'qualified';
+    else if (pos === 3) rowClass = 'qualified-third';
+    else rowClass = 'eliminated';
+
+    const posBadge = pos <= 2 ? `<span class="pos-badge pos-${pos}">${pos}</span>`
+                   : pos === 3 ? `<span class="pos-badge pos-best3">${pos}</span>`
+                   : `<span class="pos-badge pos-4">${pos}</span>`;
+
+    const formDots = t.form.map(r =>
+      `<div class="form-dot form-${r}"></div>`
+    ).join('');
+
+    return `<tr class="${rowClass}">
+      <td>${posBadge}</td>
+      <td><div class="team-cell">
+        <span class="flag">${flag}</span>
+        <span class="name">${escHtml(t.name)}</span>
+        ${rank ? `<span class="rank-tag">${rank}</span>` : ''}
+      </div></td>
+      <td>${t.p}</td>
+      <td>${t.w}</td>
+      <td>${t.d}</td>
+      <td>${t.l}</td>
+      <td>${t.gf}</td>
+      <td>${t.ga}</td>
+      <td>${gdStr}</td>
+      <td class="pts-cell">${t.pts}</td>
+      <td><div class="form-dots">${formDots}</div></td>
+    </tr>`;
+  }).join('');
+
+  // Last 3 matches in this group
+  const recent = [...matches].sort((a, b) => new Date(b.match_date) - new Date(a.match_date)).slice(0, 3);
+  const matchRows = recent.map(m => {
+    const f1 = getFlag(m.team1, m.team1_country_code);
+    const f2 = getFlag(m.team2, m.team2_country_code);
+    const scoreStr = m.status === 'FINISHED'
+      ? `<span class="gm-score finished">${m.team1_score ?? 0} – ${m.team2_score ?? 0}</span>`
+      : m.status === 'LIVE'
+      ? `<span class="gm-score" style="background:#fee2e2;color:#991b1b">🔴 LIVE</span>`
+      : `<span class="gm-score">${new Date(m.match_date).toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</span>`;
+    return `<div class="group-match">
+      <div class="gm-teams">
+        <div class="gm-team"><span class="flag">${f1}</span><span class="name">${escHtml(m.team1)}</span></div>
+        ${scoreStr}
+        <div class="gm-team"><span class="flag">${f2}</span><span class="name">${escHtml(m.team2)}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="group-card" id="group-${groupName.replace(' ','')}">
+      <div class="group-title">
+        <span>${groupName}</span>
+        <span class="group-played">${finished}/${total} played</span>
+      </div>
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th>#</th><th style="text-align:left">Team</th>
+            <th>P</th><th>W</th><th>D</th><th>L</th>
+            <th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${matchRows ? `<div class="group-matches">${matchRows}</div>` : ''}
+    </div>`;
+}
+
+function calcStandings(matches) {
+  const teams = {};
+
+  // Ensure all teams appear even if no results yet
+  matches.forEach(m => {
+    [m.team1, m.team2].forEach(name => {
+      if (!teams[name]) teams[name] = { name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, form: [] };
+    });
+  });
+
+  // Process finished matches
+  const finished = matches.filter(m => m.status === 'FINISHED')
+    .sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+
+  finished.forEach(m => {
+    const t1 = teams[m.team1];
+    const t2 = teams[m.team2];
+    if (!t1 || !t2) return;
+    const s1 = m.team1_score ?? 0;
+    const s2 = m.team2_score ?? 0;
+    t1.p++; t2.p++;
+    t1.gf += s1; t1.ga += s2;
+    t2.gf += s2; t2.ga += s1;
+    if (m.result === 'TEAM1') {
+      t1.w++; t1.pts += 3; t1.form.push('w');
+      t2.l++;              t2.form.push('l');
+    } else if (m.result === 'TEAM2') {
+      t2.w++; t2.pts += 3; t2.form.push('w');
+      t1.l++;              t1.form.push('l');
+    } else if (m.result === 'DRAW') {
+      t1.d++; t1.pts++; t1.form.push('d');
+      t2.d++; t2.pts++; t2.form.push('d');
+    }
+  });
+
+  // Pad form to 3 dots
+  Object.values(teams).forEach(t => {
+    while (t.form.length < 3) t.form.unshift('p');
+    t.form = t.form.slice(-3);
+  });
+
+  return Object.values(teams).sort((a, b) => {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    const gdA = a.gf - a.ga, gdB = b.gf - b.ga;
+    if (gdB !== gdA) return gdB - gdA;
+    return b.gf - a.gf;
+  });
+}
+
+function groupByKey(arr, key) {
+  return arr.reduce((acc, item) => {
+    const k = item[key] ?? 'Unknown';
+    if (!acc[k]) acc[k] = [];
+    acc[k].push(item);
+    return acc;
+  }, {});
+}
+
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+init();
+</script>
+</body>
+</html>

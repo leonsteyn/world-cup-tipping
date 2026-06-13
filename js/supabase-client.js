@@ -21,6 +21,8 @@ async function renderNav(activePage) {
   const pages = [
     { href: 'index.html',   label: '🏆 Leaderboard', key: 'leaderboard' },
     { href: 'matches.html', label: '📅 Fixtures',     key: 'fixtures'    },
+    { href: 'groups.html',  label: '📊 Groups',       key: 'groups'      },
+    { href: 'bracket.html', label: '🥊 Bracket',      key: 'bracket'     },
   ];
 
   const links = pages.map(p =>
