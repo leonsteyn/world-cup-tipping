@@ -71,6 +71,7 @@
     .team { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; text-align: center; }
     .team-flag { font-size: 2.2rem; line-height: 1; }
     .team-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .team-rank { font-size: 0.72rem; font-weight: 700; color: var(--muted); background: #f1f5f9; padding: 0.1rem 0.4rem; border-radius: 99px; margin-top: 0.1rem; }
 
     .vs-block { text-align: center; flex-shrink: 0; }
     .vs-text { font-size: 0.78rem; font-weight: 800; color: var(--muted); letter-spacing: 0.1em; }
@@ -232,8 +233,10 @@ function matchCard(m) {
   const isLocked = kickoff <= now;
   const myPick   = myPicks[m.id] ?? null;
 
-  const flag1 = getFlag(m.team1, m.team1_country_code);
-  const flag2 = getFlag(m.team2, m.team2_country_code);
+  const flag1  = getFlag(m.team1, m.team1_country_code);
+  const flag2  = getFlag(m.team2, m.team2_country_code);
+  const rank1  = rankLabel(m.team1);
+  const rank2  = rankLabel(m.team2);
 
   const stageName = TOURNAMENT.stages[m.stage] ?? m.stage ?? '';
   const groupPart = m.group_name ? ` · ${m.group_name}` : '';
@@ -275,19 +278,29 @@ function matchCard(m) {
         ${statusBadge}
       </div>
       <div class="match-body">
-        <div class="team"><span class="team-flag">${flag1}</span><span class="team-name">${escHtml(m.team1)}</span></div>
+        <div class="team">
+          <span class="team-flag">${flag1}</span>
+          <span class="team-name">${escHtml(m.team1)}</span>
+          ${rank1 ? `<span class="team-rank">${rank1}</span>` : ''}
+        </div>
         ${vsBlock}
-        <div class="team"><span class="team-flag">${flag2}</span><span class="team-name">${escHtml(m.team2)}</span></div>
+        <div class="team">
+          <span class="team-flag">${flag2}</span>
+          <span class="team-name">${escHtml(m.team2)}</span>
+          ${rank2 ? `<span class="team-rank">${rank2}</span>` : ''}
+        </div>
       </div>
       ${tipHTML}
     </div>`;
 }
 
 function openTipHTML(m, myPick, flag1, flag2) {
+  const r1 = rankLabel(m.team1);
+  const r2 = rankLabel(m.team2);
   const opts = [
-    { value: 'TEAM1', label: `${flag1} ${m.team1}` },
+    { value: 'TEAM1', label: `${flag1} ${m.team1}${r1 ? ' ' + r1 : ''}` },
     { value: 'DRAW',  label: 'Draw' },
-    { value: 'TEAM2', label: `${flag2} ${m.team2}` },
+    { value: 'TEAM2', label: `${flag2} ${m.team2}${r2 ? ' ' + r2 : ''}` },
   ];
   const btns = opts.map(o => {
     const sel = myPick === o.value ? ' selected' : '';
@@ -298,11 +311,13 @@ function openTipHTML(m, myPick, flag1, flag2) {
 }
 
 function finishedTipHTML(m, myPick, flag1, flag2) {
-  const result = m.result; // TEAM1, DRAW, TEAM2 or null
+  const result = m.result;
+  const r1 = rankLabel(m.team1);
+  const r2 = rankLabel(m.team2);
   const opts = [
-    { value: 'TEAM1', label: `${flag1} ${m.team1}` },
+    { value: 'TEAM1', label: `${flag1} ${m.team1}${r1 ? ' ' + r1 : ''}` },
     { value: 'DRAW',  label: 'Draw' },
-    { value: 'TEAM2', label: `${flag2} ${m.team2}` },
+    { value: 'TEAM2', label: `${flag2} ${m.team2}${r2 ? ' ' + r2 : ''}` },
   ];
 
   const btns = opts.map(o => {
