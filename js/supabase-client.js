@@ -36,7 +36,7 @@ async function renderNav(activePage) {
 
   nav.innerHTML = `
     <div class="nav-inner">
-      <a href="https://mrssteyns-games.netlify.app" class="nav-home" title="Back to Mrs Steyn's Games">
+      <a href="https://mrssteynsgames.netlify.app" class="nav-home" title="Back to Mrs Steyn's Games">
         🎮 <span>Mrs Steyn's Games</span>
       </a>
       <div class="nav-center">
