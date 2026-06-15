@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manage Players — World Cup 2026 Tipping</title>
+  <title>Admin — World Cup 2026 Tipping</title>
   <script src="js/env-config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/config.js"></script>
@@ -16,13 +16,12 @@
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* Nav */
     #nav { background: var(--blue-d); color: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
     .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1rem; height: 56px; }
     .nav-home { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; white-space: nowrap; }
     .nav-home:hover { color: #fff; }
     .nav-title { flex: 1; font-weight: 800; font-size: 1rem; color: #fff; text-align: center; }
-    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; }
     .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; padding: 0.3rem 0.6rem; border-radius: 8px; }
     .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
     .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.8); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
@@ -32,71 +31,111 @@
     .page-header h1 { font-size: 1.4rem; font-weight: 900; }
     .page-header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 0.3rem; }
 
-    main { max-width: 900px; margin: 2rem auto 4rem; padding: 0 1.25rem; }
+    /* Page tabs */
+    .page-tabs { background: var(--card); border-bottom: 2px solid var(--border); display: flex; max-width: 900px; margin: 0 auto; }
+    .page-tab { flex: 1; padding: 0.9rem; text-align: center; font-weight: 700; font-size: 0.92rem; cursor: pointer; color: var(--muted); border: none; background: none; transition: color 0.15s; }
+    .page-tab.active { color: var(--blue); border-bottom: 2px solid var(--blue); margin-bottom: -2px; }
 
-    /* Access denied */
-    .access-denied { text-align: center; padding: 4rem 1rem; }
-    .access-denied .icon { font-size: 3rem; margin-bottom: 1rem; }
-    .access-denied h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
-    .access-denied p { color: var(--muted); max-width: 380px; margin: 0 auto; }
+    main { max-width: 900px; margin: 1.75rem auto 4rem; padding: 0 1.25rem; }
 
-    /* Children list */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Section header */
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-    .section-header h2 { font-size: 1.1rem; font-weight: 800; }
-    .btn-add { background: var(--blue); color: #fff; border: none; padding: 0.5rem 1.1rem; border-radius: 99px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.15s; }
-    .btn-add:hover { background: var(--blue-d); }
+    .section-header h2 { font-size: 1.05rem; font-weight: 800; }
+    .section-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin: 1.5rem 0 0.75rem; }
 
-    .children-grid { display: grid; gap: 0.75rem; }
-    .child-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
-    .child-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #6366f1); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
-    .child-info { flex: 1; min-width: 0; }
-    .child-name { font-weight: 700; font-size: 0.95rem; }
-    .child-username { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
-    .child-username span { background: #f1f5f9; border-radius: 6px; padding: 0.1rem 0.4rem; font-family: monospace; }
-    .child-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-    .btn-icon { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.65rem; cursor: pointer; font-size: 0.82rem; color: var(--muted); transition: all 0.15s; }
+    /* Buttons */
+    .btn-add { background: var(--blue); color: #fff; border: none; padding: 0.5rem 1.1rem; border-radius: 99px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: background 0.15s; }
+    .btn-add:hover { background: var(--blue-d); }
+    .btn-primary { background: var(--blue); color: #fff; border: none; padding: 0.6rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.92rem; cursor: pointer; }
+    .btn-primary:hover { background: var(--blue-d); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-cancel { background: #f1f5f9; color: var(--text); border: none; padding: 0.6rem 1.2rem; border-radius: 9px; font-weight: 600; font-size: 0.92rem; cursor: pointer; }
+    .btn-cancel:hover { background: var(--border); }
+    .btn-icon { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem 0.65rem; cursor: pointer; font-size: 0.8rem; color: var(--muted); }
     .btn-icon:hover { border-color: var(--blue); color: var(--blue); }
     .btn-icon.danger:hover { border-color: var(--red); color: var(--red); }
+    .btn-sm { padding: 0.3rem 0.75rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; border: none; cursor: pointer; }
+    .btn-sm.primary { background: var(--blue); color: #fff; }
+    .btn-sm.ghost { background: #f1f5f9; color: var(--text); }
 
-    .empty-state { text-align: center; padding: 3rem 1rem; background: var(--card); border-radius: var(--radius); border: 2px dashed var(--border); color: var(--muted); }
-    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    /* Cards */
+    .card-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .player-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+    .player-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #6366f1); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
+    .player-info { flex: 1; min-width: 0; }
+    .player-name { font-weight: 700; font-size: 0.95rem; }
+    .player-sub { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
+    .player-sub span { background: #f1f5f9; border-radius: 6px; padding: 0.1rem 0.4rem; font-family: monospace; }
+
+    .pool-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 1px 6px rgba(0,0,0,0.05); overflow: hidden; }
+    .pool-card-header { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; }
+    .pool-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--blue-d), var(--blue)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .pool-info { flex: 1; min-width: 0; }
+    .pool-name { font-weight: 800; font-size: 0.95rem; }
+    .pool-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .badge { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; }
+    .badge-open    { background: #f0fdf4; color: #166534; }
+    .badge-closed  { background: #f1f5f9; color: var(--muted); }
+    .badge-owner   { background: #dbeafe; color: #1e40af; }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
+    .toggle { position: relative; width: 38px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 99px; cursor: pointer; transition: background 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+    .toggle input:checked + .toggle-slider { background: var(--green); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+    /* Members inline panel */
+    .pool-members-panel { border-top: 1px solid var(--border); padding: 0.85rem 1.25rem; background: #fafbfc; }
+    .members-list { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
+    .member-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; padding: 0.3rem 0; }
+    .member-row .name { flex: 1; font-weight: 600; }
+    .member-row .sub { font-size: 0.75rem; color: var(--muted); }
+
+    /* Add member row */
+    .add-member-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .add-member-row select { flex: 1; border: 1.5px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+    .add-member-row select:focus { border-color: var(--blue); outline: none; }
+
+    /* External pool card */
+    .ext-pool-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+    .ext-pool-info { flex: 1; min-width: 0; }
+    .ext-pool-name { font-weight: 700; }
+    .ext-pool-owner { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
 
     /* Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
     .modal-overlay.open { display: flex; }
-    .modal { background: var(--card); border-radius: var(--radius); width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal { background: var(--card); border-radius: var(--radius); width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
     .modal-header { padding: 1.25rem 1.5rem 0; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h3 { font-size: 1.05rem; font-weight: 800; }
     .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); line-height: 1; }
     .modal-body { padding: 1.25rem 1.5rem; }
     .modal-footer { padding: 0 1.5rem 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end; }
-
     .form-group { margin-bottom: 1rem; }
     .form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .form-group input { width: 100%; border: 1.5px solid var(--border); border-radius: 9px; padding: 0.6rem 0.85rem; font-size: 0.95rem; color: var(--text); outline: none; transition: border-color 0.15s; }
+    .form-group input { width: 100%; border: 1.5px solid var(--border); border-radius: 9px; padding: 0.6rem 0.85rem; font-size: 0.95rem; color: var(--text); outline: none; }
     .form-group input:focus { border-color: var(--blue); }
     .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
-
-    .btn-primary { background: var(--blue); color: #fff; border: none; padding: 0.6rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: background 0.15s; }
-    .btn-primary:hover { background: var(--blue-d); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-cancel { background: #f1f5f9; color: var(--text); border: none; padding: 0.6rem 1.2rem; border-radius: 9px; font-weight: 600; font-size: 0.92rem; cursor: pointer; }
-    .btn-cancel:hover { background: var(--border); }
-
     .form-error { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
     .form-error.visible { display: block; }
-    .form-success { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
-    .form-success.visible { display: block; }
 
-    /* Password toggle */
+    /* Password */
     .pw-wrap { position: relative; }
     .pw-wrap input { padding-right: 2.5rem; }
-    .pw-toggle { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; }
-
-    /* Delete confirm */
-    .confirm-name { font-weight: 700; }
+    .pw-toggle { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); }
 
     .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .empty-state { text-align: center; padding: 3rem 1rem; background: var(--card); border-radius: var(--radius); border: 2px dashed var(--border); color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .access-denied { text-align: center; padding: 4rem 1rem; }
+    .access-denied .icon { font-size: 3rem; margin-bottom: 1rem; }
 
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 2rem 1rem; }
   </style>
@@ -105,8 +144,8 @@
 
 <nav id="nav">
   <div class="nav-inner">
-    <a href="https://mrssteynsgames.netlify.app" class="nav-home" title="Back to Mrs Steyn's Games">🎮 Mrs Steyn's Games</a>
-    <span class="nav-title">⚽ Player Admin</span>
+    <a href="https://mrssteynsgames.netlify.app" class="nav-home">🎮 Mrs Steyn's Games</a>
+    <span class="nav-title">⚽ Admin</span>
     <div class="nav-links">
       <a href="index.html" class="nav-link">🏆 Leaderboard</a>
       <button onclick="doSignOut()" class="btn-ghost">Sign out</button>
@@ -115,70 +154,124 @@
 </nav>
 
 <div class="page-header">
-  <h1>👥 Manage Players</h1>
-  <p>Add, edit or remove child/student players for World Cup 2026 Tipping</p>
+  <h1>⚙️ Admin</h1>
+  <p>Manage players and pools for World Cup 2026 Tipping</p>
 </div>
 
-<main id="main">
-  <div class="loading">Checking access…</div>
+<div class="page-tabs" id="page-tabs">
+  <button class="page-tab active" onclick="switchTab('players')">👥 Players</button>
+  <button class="page-tab" onclick="switchTab('pools')">🏊 Pools</button>
+</div>
+
+<main>
+  <div id="access-check" class="loading">Checking access…</div>
+
+  <!-- Players tab -->
+  <div class="tab-panel" id="tab-players">
+    <div class="section-header">
+      <h2>Your Players</h2>
+      <button class="btn-add" onclick="openAddModal()">＋ Add Player</button>
+    </div>
+    <div id="players-list" class="loading">Loading…</div>
+  </div>
+
+  <!-- Pools tab -->
+  <div class="tab-panel" id="tab-pools">
+    <div class="section-header">
+      <h2>Your Pools</h2>
+      <button class="btn-add" onclick="openCreatePoolModal()">＋ Create Pool</button>
+    </div>
+    <div id="my-pools-list" class="loading">Loading…</div>
+
+    <div class="section-title" id="open-pools-title" style="display:none">Open Pools — Add Your Players</div>
+    <div id="open-pools-list"></div>
+  </div>
 </main>
 
-<!-- Add / Edit Modal -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal" role="dialog" aria-modal="true">
+<!-- Add/Edit Player modal -->
+<div class="modal-overlay" id="modal-player" onclick="closeModal('modal-player', event)">
+  <div class="modal">
     <div class="modal-header">
-      <h3 id="modal-title">Add Player</h3>
-      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+      <h3 id="player-modal-title">Add Player</h3>
+      <button class="modal-close" onclick="closeModal('modal-player')">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="form-error" id="modal-error"></div>
-      <div class="form-success" id="modal-success"></div>
-
-      <input type="hidden" id="edit-id"/>
-
+      <div class="form-error" id="player-error"></div>
+      <input type="hidden" id="edit-player-id"/>
       <div class="form-group">
-        <label for="field-display-name">Display Name</label>
+        <label>Display Name</label>
         <input id="field-display-name" type="text" placeholder="e.g. Sarah" autocomplete="off"/>
-        <div class="form-hint">Shown on leaderboards and pick lists</div>
       </div>
-
       <div class="form-group" id="username-group">
-        <label for="field-username">Username</label>
+        <label>Username</label>
         <input id="field-username" type="text" placeholder="e.g. sarah2026" autocomplete="off"/>
-        <div class="form-hint">Letters, numbers, underscores and dots only. Child types this to log in.</div>
+        <div class="form-hint">Letters, numbers, underscores and dots only</div>
       </div>
-
       <div class="form-group">
-        <label for="field-password" id="pw-label">Password</label>
+        <label id="pw-label">Password</label>
         <div class="pw-wrap">
           <input id="field-password" type="password" placeholder="At least 6 characters" autocomplete="new-password"/>
           <button type="button" class="pw-toggle" onclick="togglePw('field-password', this)">👁</button>
         </div>
-        <div class="form-hint" id="pw-hint">Set the password the child will use to log in</div>
+        <div class="form-hint" id="pw-hint">Set the password the player will use to log in</div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-primary" id="modal-save-btn" onclick="saveChild()">Add Player</button>
+      <button class="btn-cancel" onclick="closeModal('modal-player')">Cancel</button>
+      <button class="btn-primary" id="player-save-btn" onclick="savePlayer()">Add Player</button>
     </div>
   </div>
 </div>
 
-<!-- Delete Confirm Modal -->
-<div class="modal-overlay" id="delete-overlay" onclick="closeDelete(event)">
-  <div class="modal" role="dialog" aria-modal="true">
+<!-- Create/Edit Pool modal -->
+<div class="modal-overlay" id="modal-pool" onclick="closeModal('modal-pool', event)">
+  <div class="modal">
     <div class="modal-header">
-      <h3>Remove Player</h3>
-      <button class="modal-close" onclick="closeDelete()" aria-label="Close">&times;</button>
+      <h3 id="pool-modal-title">Create Pool</h3>
+      <button class="modal-close" onclick="closeModal('modal-pool')">&times;</button>
     </div>
     <div class="modal-body">
-      <p>Are you sure you want to remove <span class="confirm-name" id="delete-name"></span>?</p>
-      <p style="margin-top:0.6rem;font-size:0.85rem;color:var(--muted)">Their picks and tipping history will also be deleted. This cannot be undone.</p>
+      <div class="form-error" id="pool-error"></div>
+      <input type="hidden" id="edit-pool-id"/>
+      <div class="form-group">
+        <label>Pool Name</label>
+        <input id="field-pool-name" type="text" placeholder="e.g. Class 5B" autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label>Visibility</label>
+        <div style="margin-top:0.5rem">
+          <label class="toggle-wrap">
+            <span class="toggle">
+              <input type="checkbox" id="field-pool-open"/>
+              <span class="toggle-slider"></span>
+            </span>
+            <span id="pool-open-label">Private — only you can add players</span>
+          </label>
+        </div>
+        <div class="form-hint">Open pools are visible to all parents/teachers who can then add their own players</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-pool')">Cancel</button>
+      <button class="btn-primary" id="pool-save-btn" onclick="savePool()">Create Pool</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="modal-delete" onclick="closeModal('modal-delete', event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="delete-title">Confirm Delete</h3>
+      <button class="modal-close" onclick="closeModal('modal-delete')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="delete-message"></p>
       <div class="form-error" id="delete-error" style="margin-top:0.75rem"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeDelete()">Cancel</button>
-      <button class="btn-primary" id="delete-confirm-btn" onclick="confirmDelete()" style="background:var(--red)">Remove</button>
+      <button class="btn-cancel" onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="btn-primary" id="delete-confirm-btn" style="background:var(--red)">Delete</button>
     </div>
   </div>
 </div>
@@ -187,228 +280,461 @@
 
 <script src="js/api.js"></script>
 <script>
-let currentUser = null;
-let deleteTargetId = null;
+let parentId    = null;
+let myChildren  = [];  // child_accounts rows this parent owns
+let myPools     = [];
+
+// ── Init ─────────────────────────────────────────────────────────────────────
 
 async function init() {
-  currentUser = await SB.getUser();
-  if (!currentUser) {
-    window.location.href = 'auth.html';
-    return;
-  }
+  const user = await SB.getUser();
+  if (!user) { window.location.href = 'auth.html'; return; }
 
-  // Check parent status
-  const { data: profile } = await SB.getOne('profiles', `id=eq.${currentUser.id}&select=account_type,display_name`);
+  const { data: profile } = await SB.getOne('profiles', `id=eq.${user.id}&select=account_type,display_name`);
   if (!profile || profile.account_type !== 'parent') {
-    document.getElementById('main').innerHTML = `
+    document.getElementById('access-check').outerHTML = `
       <div class="access-denied">
         <div class="icon">🔒</div>
         <h2>Parent/Teacher Account Required</h2>
-        <p>Only parent or teacher accounts can manage child players. Please sign in with a parent account.</p>
+        <p>Only parent or teacher accounts can access admin. Please sign in with a parent account.</p>
       </div>`;
     return;
   }
 
-  renderPage();
-  loadChildren();
+  parentId = user.id;
+  document.getElementById('access-check').style.display = 'none';
+  document.getElementById('tab-players').classList.add('active');
+
+  await Promise.all([loadPlayers(), loadPools()]);
 }
 
-function renderPage() {
-  document.getElementById('main').innerHTML = `
-    <div class="section-header">
-      <h2>Your Players</h2>
-      <button class="btn-add" onclick="openAddModal()">＋ Add Player</button>
-    </div>
-    <div id="children-list"><div class="loading">Loading players…</div></div>`;
+function switchTab(tab) {
+  document.querySelectorAll('.page-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'players') || (i === 1 && tab === 'pools'));
+  });
+  document.getElementById('tab-players').classList.toggle('active', tab === 'players');
+  document.getElementById('tab-pools').classList.toggle('active', tab === 'pools');
 }
 
-async function loadChildren() {
+// ── Players tab ───────────────────────────────────────────────────────────────
+
+async function loadPlayers() {
   const token = SB.getToken();
   const res = await fetch('/.netlify/functions/admin-children', {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const list = document.getElementById('children-list');
-
-  if (!res.ok) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load players.</p></div>`;
-    return;
-  }
-
-  const children = await res.json();
-
-  if (!children.length) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">👧🧒</div>
-        <p>No players yet. Click <strong>Add Player</strong> to get started.</p>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = `<div class="children-grid">${children.map(childCard).join('')}</div>`;
+  myChildren = res.ok ? await res.json() : [];
+  renderPlayers();
 }
 
-function childCard(c) {
+function renderPlayers() {
+  const el = document.getElementById('players-list');
+  if (!myChildren.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">👧🧒</div><p>No players yet. Click <strong>Add Player</strong> to get started.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card-list">${myChildren.map(playerCard).join('')}</div>`;
+}
+
+function playerCard(c) {
   const initial = (c.display_name ?? '?')[0].toUpperCase();
   return `
-    <div class="child-card" id="card-${c.id}">
-      <div class="child-avatar">${initial}</div>
-      <div class="child-info">
-        <div class="child-name">${esc(c.display_name)}</div>
-        <div class="child-username">Username: <span>${esc(c.username)}</span></div>
+    <div class="player-card">
+      <div class="player-avatar">${initial}</div>
+      <div class="player-info">
+        <div class="player-name">${esc(c.display_name)}</div>
+        <div class="player-sub">Username: <span>${esc(c.username)}</span></div>
       </div>
-      <div class="child-actions">
-        <button class="btn-icon" onclick="openEditModal('${c.id}','${esc(c.display_name)}','${esc(c.username)}')">✏️ Edit</button>
-        <button class="btn-icon danger" onclick="openDeleteModal('${c.id}','${esc(c.display_name)}')">🗑 Remove</button>
+      <div style="display:flex;gap:0.4rem">
+        <button class="btn-icon" onclick="openEditPlayerModal('${c.id}','${esc(c.display_name)}','${esc(c.username)}')">✏️</button>
+        <button class="btn-icon danger" onclick="confirmDeletePlayer('${c.id}','${esc(c.display_name)}')">🗑</button>
       </div>
     </div>`;
 }
 
-// ── Add / Edit Modal ─────────────────────────────────────────────────────────
-
 function openAddModal() {
-  document.getElementById('modal-title').textContent = 'Add Player';
-  document.getElementById('modal-save-btn').textContent = 'Add Player';
-  document.getElementById('edit-id').value = '';
-  document.getElementById('field-display-name').value = '';
-  document.getElementById('field-username').value = '';
-  document.getElementById('field-password').value = '';
-  document.getElementById('username-group').style.display = '';
-  document.getElementById('pw-label').textContent = 'Password';
-  document.getElementById('pw-hint').textContent = 'Set the password the child will use to log in';
-  clearModalMessages();
-  document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('field-display-name').focus();
+  document.getElementById('player-modal-title').textContent = 'Add Player';
+  document.getElementById('player-save-btn').textContent    = 'Add Player';
+  document.getElementById('edit-player-id').value           = '';
+  document.getElementById('field-display-name').value       = '';
+  document.getElementById('field-username').value           = '';
+  document.getElementById('field-password').value           = '';
+  document.getElementById('pw-label').textContent           = 'Password';
+  document.getElementById('pw-hint').textContent            = 'Set the password the player will use to log in';
+  document.getElementById('username-group').style.display   = '';
+  document.getElementById('player-error').classList.remove('visible');
+  openModal('modal-player');
 }
 
-function openEditModal(id, displayName, username) {
-  document.getElementById('modal-title').textContent = 'Edit Player';
-  document.getElementById('modal-save-btn').textContent = 'Save Changes';
-  document.getElementById('edit-id').value = id;
-  document.getElementById('field-display-name').value = displayName;
-  document.getElementById('field-username').value = username;
-  document.getElementById('field-password').value = '';
-  document.getElementById('username-group').style.display = '';
-  document.getElementById('pw-label').textContent = 'New Password';
-  document.getElementById('pw-hint').textContent = 'Leave blank to keep the existing password';
-  clearModalMessages();
-  document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('field-display-name').focus();
+function openEditPlayerModal(id, name, username) {
+  document.getElementById('player-modal-title').textContent = 'Edit Player';
+  document.getElementById('player-save-btn').textContent    = 'Save Changes';
+  document.getElementById('edit-player-id').value           = id;
+  document.getElementById('field-display-name').value       = name;
+  document.getElementById('field-username').value           = username;
+  document.getElementById('field-password').value           = '';
+  document.getElementById('pw-label').textContent           = 'New Password';
+  document.getElementById('pw-hint').textContent            = 'Leave blank to keep the existing password';
+  document.getElementById('player-error').classList.remove('visible');
+  openModal('modal-player');
 }
 
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal-overlay')) return;
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
-async function saveChild() {
-  const id = document.getElementById('edit-id').value;
+async function savePlayer() {
+  const id           = document.getElementById('edit-player-id').value;
   const display_name = document.getElementById('field-display-name').value.trim();
-  const username = document.getElementById('field-username').value.trim();
-  const password = document.getElementById('field-password').value;
-  const btn = document.getElementById('modal-save-btn');
+  const username     = document.getElementById('field-username').value.trim();
+  const password     = document.getElementById('field-password').value;
+  const btn          = document.getElementById('player-save-btn');
+  const errEl        = document.getElementById('player-error');
+  errEl.classList.remove('visible');
 
-  clearModalMessages();
+  if (!display_name) return showErr(errEl, 'Display name is required.');
+  if (!username)     return showErr(errEl, 'Username is required.');
+  if (!id && !password) return showErr(errEl, 'Password is required for new players.');
+  if (password && password.length < 6) return showErr(errEl, 'Password must be at least 6 characters.');
 
-  if (!display_name) return showModalError('Display name is required.');
-  if (!username) return showModalError('Username is required.');
-  if (!id && !password) return showModalError('Password is required for new players.');
-  if (password && password.length < 6) return showModalError('Password must be at least 6 characters.');
-
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  const token = SB.getToken();
+  btn.disabled = true; btn.textContent = 'Saving…';
   const isEdit = !!id;
-
-  const body = isEdit
+  const body   = isEdit
     ? { id, display_name, username, ...(password ? { password } : {}) }
     : { display_name, username, password };
 
   const res = await fetch('/.netlify/functions/admin-children', {
     method: isEdit ? 'PATCH' : 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${SB.getToken()}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-
-  btn.disabled = false;
-  btn.textContent = isEdit ? 'Save Changes' : 'Add Player';
+  btn.disabled = false; btn.textContent = isEdit ? 'Save Changes' : 'Add Player';
 
   if (!res.ok) {
     const err = await res.json();
-    return showModalError(err.error ?? 'Something went wrong. Please try again.');
+    return showErr(errEl, err.error ?? 'Something went wrong.');
   }
-
-  showModalSuccess(isEdit ? 'Player updated!' : 'Player added!');
-  setTimeout(() => {
-    document.getElementById('modal-overlay').classList.remove('open');
-    loadChildren();
-  }, 900);
+  closeModal('modal-player');
+  await loadPlayers();
 }
 
-// ── Delete Modal ─────────────────────────────────────────────────────────────
-
-function openDeleteModal(id, name) {
-  deleteTargetId = id;
-  document.getElementById('delete-name').textContent = name;
+function confirmDeletePlayer(id, name) {
+  document.getElementById('delete-title').textContent   = 'Remove Player';
+  document.getElementById('delete-message').textContent = `Remove ${name}? Their picks and tips will also be deleted. This cannot be undone.`;
   document.getElementById('delete-error').classList.remove('visible');
-  document.getElementById('delete-overlay').classList.add('open');
-}
-
-function closeDelete(e) {
-  if (e && e.target !== document.getElementById('delete-overlay')) return;
-  document.getElementById('delete-overlay').classList.remove('open');
-}
-
-async function confirmDelete() {
-  if (!deleteTargetId) return;
   const btn = document.getElementById('delete-confirm-btn');
-  btn.disabled = true;
-  btn.textContent = 'Removing…';
+  btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = 'Removing…';
+    const res = await fetch(`/.netlify/functions/admin-children?id=${id}`, {
+      method: 'DELETE', headers: { Authorization: `Bearer ${SB.getToken()}` },
+    });
+    btn.disabled = false; btn.textContent = 'Delete';
+    if (!res.ok) {
+      const e = await res.json();
+      showErr(document.getElementById('delete-error'), e.error ?? 'Failed.');
+      return;
+    }
+    closeModal('modal-delete');
+    await loadPlayers();
+    await loadPools(); // membership counts update
+  };
+  openModal('modal-delete');
+}
 
-  const token = SB.getToken();
-  const res = await fetch(`/.netlify/functions/admin-children?id=${deleteTargetId}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+// ── Pools tab ─────────────────────────────────────────────────────────────────
 
-  btn.disabled = false;
-  btn.textContent = 'Remove';
+async function loadPools() {
+  // My pools
+  const { data: owned } = await SB.get('pools',
+    `owner_id=eq.${parentId}&select=id,name,is_open,tournament_code&order=created_at`
+  );
+  myPools = owned ?? [];
 
-  if (!res.ok) {
-    const err = await res.json();
-    document.getElementById('delete-error').textContent = err.error ?? 'Failed to remove player.';
-    document.getElementById('delete-error').classList.add('visible');
+  // Open pools from other parents
+  const { data: openOthers } = await SB.get('pools',
+    `is_open=eq.true&owner_id=neq.${parentId}&select=id,name,owner_id,profiles!owner_id(display_name)`
+  );
+
+  renderMyPools();
+  renderOpenPools(openOthers ?? []);
+}
+
+async function renderMyPools() {
+  const el = document.getElementById('my-pools-list');
+  if (!myPools.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🏊</div><p>No pools yet. Create one to group your players.</p></div>`;
     return;
   }
 
-  document.getElementById('delete-overlay').classList.remove('open');
-  loadChildren();
+  // Load members for each pool
+  const memberData = await Promise.all(myPools.map(p =>
+    SB.get('pool_members', `pool_id=eq.${p.id}&select=player_id,added_by,profiles(id,display_name)`)
+  ));
+
+  el.innerHTML = `<div class="card-list">${myPools.map((p, i) =>
+    poolCard(p, memberData[i].data ?? [])
+  ).join('')}</div>`;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+function poolCard(pool, members) {
+  const badge = pool.is_open
+    ? `<span class="badge badge-open">🌐 Open</span>`
+    : `<span class="badge badge-closed">🔒 Private</span>`;
 
-function clearModalMessages() {
-  document.getElementById('modal-error').classList.remove('visible');
-  document.getElementById('modal-success').classList.remove('visible');
+  const memberRows = members.map(m => {
+    const canRemove = m.added_by === parentId || pool.owner_id === parentId;
+    return `<div class="member-row">
+      <span class="name">${esc(m.profiles?.display_name ?? 'Unknown')}</span>
+      ${canRemove ? `<button class="btn-icon danger" onclick="removeMember('${pool.id}','${m.player_id}','${esc(m.profiles?.display_name ?? '')}')">✕</button>` : ''}
+    </div>`;
+  }).join('') || '<div style="font-size:0.82rem;color:var(--muted);padding:0.3rem 0">No players yet</div>';
+
+  // Children not already in this pool
+  const memberIds = new Set(members.map(m => m.player_id));
+  const eligible  = myChildren.filter(c => !memberIds.has(c.id));
+  const addRow    = eligible.length ? `
+    <div class="add-member-row">
+      <select id="add-select-${pool.id}">
+        <option value="">— Select a player to add —</option>
+        ${eligible.map(c => `<option value="${c.id}">${esc(c.display_name)}</option>`).join('')}
+      </select>
+      <button class="btn-sm primary" onclick="addMember('${pool.id}')">Add</button>
+    </div>` : '';
+
+  return `
+    <div class="pool-card" id="pool-card-${pool.id}">
+      <div class="pool-card-header">
+        <div class="pool-icon">🏊</div>
+        <div class="pool-info">
+          <div class="pool-name">${esc(pool.name)}</div>
+          <div class="pool-meta">
+            ${badge}
+            <span>${members.length} player${members.length !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-shrink:0">
+          <button class="btn-icon" onclick="openEditPoolModal('${pool.id}','${esc(pool.name)}',${pool.is_open})">✏️</button>
+          <button class="btn-icon danger" onclick="confirmDeletePool('${pool.id}','${esc(pool.name)}')">🗑</button>
+        </div>
+      </div>
+      <div class="pool-members-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem">
+          <span style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted)">Players</span>
+          <label class="toggle-wrap" title="Toggle open/private">
+            <span class="toggle">
+              <input type="checkbox" ${pool.is_open ? 'checked' : ''} onchange="togglePoolOpen('${pool.id}', this.checked)"/>
+              <span class="toggle-slider"></span>
+            </span>
+            <span style="font-size:0.78rem">${pool.is_open ? 'Open' : 'Private'}</span>
+          </label>
+        </div>
+        <div class="members-list">${memberRows}</div>
+        ${addRow}
+      </div>
+    </div>`;
 }
 
-function showModalError(msg) {
-  const el = document.getElementById('modal-error');
-  el.textContent = msg;
-  el.classList.add('visible');
+function renderOpenPools(pools) {
+  const titleEl = document.getElementById('open-pools-title');
+  const listEl  = document.getElementById('open-pools-list');
+  if (!pools.length) { titleEl.style.display = 'none'; listEl.innerHTML = ''; return; }
+  titleEl.style.display = '';
+  listEl.innerHTML = `<div class="card-list">${pools.map(p => extPoolCard(p)).join('')}</div>`;
 }
 
-function showModalSuccess(msg) {
-  const el = document.getElementById('modal-success');
-  el.textContent = msg;
-  el.classList.add('visible');
+function extPoolCard(pool) {
+  const ownerName = pool.profiles?.display_name ?? 'Unknown';
+  return `
+    <div class="ext-pool-card">
+      <div class="pool-icon">🌐</div>
+      <div class="ext-pool-info">
+        <div class="ext-pool-name">${esc(pool.name)}</div>
+        <div class="ext-pool-owner">Created by ${esc(ownerName)}</div>
+      </div>
+      <button class="btn-sm primary" onclick="openJoinPoolModal('${pool.id}','${esc(pool.name)}')">Add my players</button>
+    </div>`;
 }
+
+// ── Pool CRUD ─────────────────────────────────────────────────────────────────
+
+function openCreatePoolModal() {
+  document.getElementById('pool-modal-title').textContent = 'Create Pool';
+  document.getElementById('pool-save-btn').textContent    = 'Create Pool';
+  document.getElementById('edit-pool-id').value           = '';
+  document.getElementById('field-pool-name').value        = '';
+  document.getElementById('field-pool-open').checked      = false;
+  document.getElementById('pool-open-label').textContent  = 'Private — only you can add players';
+  document.getElementById('pool-error').classList.remove('visible');
+  openModal('modal-pool');
+}
+
+function openEditPoolModal(id, name, isOpen) {
+  document.getElementById('pool-modal-title').textContent = 'Edit Pool';
+  document.getElementById('pool-save-btn').textContent    = 'Save Changes';
+  document.getElementById('edit-pool-id').value           = id;
+  document.getElementById('field-pool-name').value        = name;
+  document.getElementById('field-pool-open').checked      = isOpen;
+  document.getElementById('pool-open-label').textContent  = isOpen ? 'Open — other parents can add their players' : 'Private — only you can add players';
+  document.getElementById('pool-error').classList.remove('visible');
+  openModal('modal-pool');
+}
+
+document.getElementById('field-pool-open').addEventListener('change', function() {
+  document.getElementById('pool-open-label').textContent = this.checked
+    ? 'Open — other parents can add their players'
+    : 'Private — only you can add players';
+});
+
+async function savePool() {
+  const id      = document.getElementById('edit-pool-id').value;
+  const name    = document.getElementById('field-pool-name').value.trim();
+  const is_open = document.getElementById('field-pool-open').checked;
+  const btn     = document.getElementById('pool-save-btn');
+  const errEl   = document.getElementById('pool-error');
+  errEl.classList.remove('visible');
+
+  if (!name) return showErr(errEl, 'Pool name is required.');
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  let res;
+  if (id) {
+    // Update
+    res = await fetch(`${SUPABASE_URL}/rest/v1/pools?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { ...authHeaders(), Prefer: 'return=minimal' },
+      body: JSON.stringify({ name, is_open }),
+    });
+  } else {
+    // Create
+    res = await fetch(`${SUPABASE_URL}/rest/v1/pools`, {
+      method: 'POST',
+      headers: { ...authHeaders(), Prefer: 'return=minimal' },
+      body: JSON.stringify({ owner_id: parentId, name, is_open, tournament_code: 'WC2026' }),
+    });
+  }
+
+  btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Create Pool';
+
+  if (!res.ok) {
+    const text = await res.text();
+    return showErr(errEl, 'Failed to save pool. Please try again.');
+  }
+  closeModal('modal-pool');
+  await loadPools();
+}
+
+async function togglePoolOpen(poolId, isOpen) {
+  await fetch(`${SUPABASE_URL}/rest/v1/pools?id=eq.${poolId}`, {
+    method: 'PATCH',
+    headers: { ...authHeaders(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ is_open: isOpen }),
+  });
+  await loadPools();
+}
+
+function confirmDeletePool(id, name) {
+  document.getElementById('delete-title').textContent   = 'Delete Pool';
+  document.getElementById('delete-message').textContent = `Delete "${name}"? All pool members will be removed. Player accounts and tips are kept.`;
+  document.getElementById('delete-error').classList.remove('visible');
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = 'Deleting…';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/pools?id=eq.${id}`, {
+      method: 'DELETE', headers: authHeaders(),
+    });
+    btn.disabled = false; btn.textContent = 'Delete';
+    if (!res.ok) { showErr(document.getElementById('delete-error'), 'Failed to delete pool.'); return; }
+    closeModal('modal-delete');
+    await loadPools();
+  };
+  openModal('modal-delete');
+}
+
+// ── Pool membership ───────────────────────────────────────────────────────────
+
+async function addMember(poolId) {
+  const sel      = document.getElementById(`add-select-${poolId}`);
+  const playerId = sel?.value;
+  if (!playerId) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/pool_members`, {
+    method: 'POST',
+    headers: { ...authHeaders(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ pool_id: poolId, player_id: playerId, added_by: parentId }),
+  });
+  if (res.ok) await loadPools();
+}
+
+async function removeMember(poolId, playerId, playerName) {
+  if (!confirm(`Remove ${playerName} from this pool?`)) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/pool_members?pool_id=eq.${poolId}&player_id=eq.${playerId}`, {
+    method: 'DELETE', headers: authHeaders(),
+  });
+  await loadPools();
+}
+
+// Join an open pool (add your own children)
+async function openJoinPoolModal(poolId, poolName) {
+  if (!myChildren.length) {
+    alert('You have no players to add. Create players first in the Players tab.');
+    return;
+  }
+
+  // Get current members to exclude already-joined ones
+  const { data: members } = await SB.get('pool_members', `pool_id=eq.${poolId}&select=player_id`);
+  const memberIds  = new Set((members ?? []).map(m => m.player_id));
+  const eligible   = myChildren.filter(c => !memberIds.has(c.id));
+
+  if (!eligible.length) {
+    alert('All your players are already in this pool.');
+    return;
+  }
+
+  const list = eligible.map(c => `
+    <div class="member-row">
+      <span class="name">${esc(c.display_name)}</span>
+      <button class="btn-sm primary" onclick="joinPool('${poolId}','${c.id}', this)">Add</button>
+    </div>`).join('');
+
+  document.getElementById('delete-title').textContent   = `Join "${poolName}"`;
+  document.getElementById('delete-message').innerHTML   = `<p style="margin-bottom:0.75rem">Select players to add to this pool:</p><div class="members-list">${list}</div>`;
+  document.getElementById('delete-error').classList.remove('visible');
+  document.getElementById('delete-confirm-btn').style.display = 'none';
+  openModal('modal-delete');
+}
+
+async function joinPool(poolId, playerId, btn) {
+  btn.disabled = true; btn.textContent = '✓';
+  await fetch(`${SUPABASE_URL}/rest/v1/pool_members`, {
+    method: 'POST',
+    headers: { ...authHeaders(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ pool_id: poolId, player_id: playerId, added_by: parentId }),
+  });
+  btn.disabled = false;
+  await loadPools();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function authHeaders() {
+  return {
+    apikey:          SUPABASE_ANON_KEY,
+    Authorization:   `Bearer ${SB.getToken()}`,
+    'Content-Type':  'application/json',
+  };
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id, e) {
+  if (e && e.target !== document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+  // Reset delete confirm button visibility
+  if (id === 'modal-delete') document.getElementById('delete-confirm-btn').style.display = '';
+}
+
+function showErr(el, msg) { el.textContent = msg; el.classList.add('visible'); }
 
 function togglePw(inputId, btn) {
   const input = document.getElementById(inputId);
-  const show = input.type === 'password';
-  input.type = show ? 'text' : 'password';
+  const show  = input.type === 'password';
+  input.type  = show ? 'text' : 'password';
   btn.textContent = show ? '🙈' : '👁';
 }
 

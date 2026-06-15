@@ -403,6 +403,28 @@ async function syncMatches(showFeedback = true) {
 // ── All tips panel ───────────────────────────────────────────────────────
 
 const loadedTips = {}; // cache per match
+let poolMemberIds = null; // cached pool member list
+
+async function getPoolMembers() {
+  if (poolMemberIds !== null) return poolMemberIds;
+  if (!currentUser) { poolMemberIds = []; return poolMemberIds; }
+
+  const poolId = localStorage.getItem(`${TOURNAMENT.code}_active_pool`);
+  if (!poolId) {
+    // Fallback: find any pool this user belongs to
+    const { data: memberships } = await SB.get('pool_members',
+      `player_id=eq.${currentUser.id}&select=pool_id&limit=1`
+    );
+    const pid = memberships?.[0]?.pool_id;
+    if (!pid) { poolMemberIds = []; return poolMemberIds; }
+    const { data: members } = await SB.get('pool_members', `pool_id=eq.${pid}&select=player_id`);
+    poolMemberIds = (members ?? []).map(m => m.player_id);
+  } else {
+    const { data: members } = await SB.get('pool_members', `pool_id=eq.${poolId}&select=player_id`);
+    poolMemberIds = (members ?? []).map(m => m.player_id);
+  }
+  return poolMemberIds;
+}
 
 async function toggleAllTips(matchId, btn) {
   const panel = document.getElementById(`all-tips-${matchId}`);
@@ -424,10 +446,20 @@ async function toggleAllTips(matchId, btn) {
 
   panel.innerHTML = `<div class="tips-loading">Loading…</div>`;
 
-  // Fetch all picks for this match joined with profile display names
-  const { data } = await SB.get('picks', `match_id=eq.${matchId}&select=pick,player_id,profiles(display_name)`);
-  // Also fetch all profiles so we can show users who didn't pick
-  const { data: profiles } = await SB.get('profiles', `select=id,display_name`);
+  const memberIds = await getPoolMembers();
+
+  // Fetch picks for this match, scoped to pool members
+  const picksQuery = memberIds.length
+    ? `match_id=eq.${matchId}&player_id=in.(${memberIds.join(',')})&select=pick,player_id,profiles(display_name)`
+    : `match_id=eq.${matchId}&select=pick,player_id,profiles(display_name)`;
+
+  const { data } = await SB.get('picks', picksQuery);
+
+  // Pool member profiles (including those who didn't pick)
+  const profilesQuery = memberIds.length
+    ? `id=in.(${memberIds.join(',')})&select=id,display_name`
+    : `select=id,display_name`;
+  const { data: profiles } = await SB.get('profiles', profilesQuery);
 
   const match = allMatches.find(m => m.id === matchId);
   loadedTips[matchId] = { picks: data ?? [], profiles: profiles ?? [], match };
