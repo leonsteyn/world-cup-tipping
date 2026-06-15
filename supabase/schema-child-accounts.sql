@@ -67,16 +67,18 @@ create policy "parent_delete_children" on child_accounts
 create index if not exists child_accounts_username_idx on child_accounts (username);
 create index if not exists child_accounts_parent_idx   on child_accounts (parent_id);
 
--- 7. Expose account_type in the leaderboard view (optional — nice for admin UI)
--- The leaderboard view is recreated to include account_type:
+-- 7. Recreate leaderboard view to include account_type
 drop view if exists leaderboard;
 create or replace view leaderboard as
 select
   p.id,
   p.display_name,
   p.account_type,
-  count(pk.id) filter (where pk.result = 'correct')  as points,
-  count(pk.id) filter (where pk.result is not null)  as total_picks
+  coalesce(count(case when pk.pick = m.result then 1 end), 0)::int                     as points,
+  coalesce(count(pk.id), 0)::int                                                         as total_picks,
+  coalesce(count(case when m.status = 'FINISHED' then pk.id end), 0)::int               as settled_picks
 from profiles p
-left join picks pk on pk.player_id = p.id
-group by p.id, p.display_name, p.account_type;
+left join picks    pk on pk.player_id = p.id
+left join matches  m  on m.id = pk.match_id
+group by p.id, p.display_name, p.account_type
+order by points desc, total_picks desc;
