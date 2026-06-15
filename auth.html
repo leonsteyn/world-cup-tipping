@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Register / Login — World Cup 2026 Tipping</title>
-  
+  <title>Login — World Cup 2026 Tipping</title>
+
   <script src="js/env-config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/config.js"></script>
@@ -13,9 +13,10 @@
     :root {
       --blue: #1d4ed8; --blue-d: #1e3a8a; --gold: #f59e0b;
       --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #64748b;
-      --border: #e2e8f0; --radius: 16px; --red: #dc2626;
+      --border: #e2e8f0; --radius: 16px; --red: #dc2626; --green: #16a34a;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
     #nav { background: var(--blue-d); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
     .nav-inner { max-width: 1000px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1rem; height: 56px; }
     .nav-home { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; }
@@ -28,24 +29,31 @@
 
     main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
 
-    .auth-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 32px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 420px;
-      overflow: hidden;
+    /* Mode switcher (Child vs Parent) */
+    .mode-switcher { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; }
+    .mode-btn {
+      flex: 1; border: 2px solid var(--border); background: #f8fafc; border-radius: 12px;
+      padding: 0.75rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.15s;
     }
+    .mode-btn .icon { font-size: 1.6rem; display: block; margin-bottom: 0.25rem; }
+    .mode-btn .label { font-weight: 800; font-size: 0.9rem; display: block; }
+    .mode-btn .sub { font-size: 0.72rem; color: var(--muted); }
+    .mode-btn.active { border-color: var(--blue); background: #eff6ff; }
+    .mode-btn.active .label { color: var(--blue); }
+
+    .auth-card { background: var(--card); border-radius: var(--radius); box-shadow: 0 4px 32px rgba(0,0,0,0.1); width: 100%; max-width: 420px; overflow: hidden; }
     .auth-header { background: linear-gradient(135deg, var(--blue-d), var(--blue)); color: #fff; padding: 2rem; text-align: center; }
     .auth-header .emoji { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
     .auth-header h1 { font-size: 1.3rem; font-weight: 900; }
     .auth-header p { font-size: 0.88rem; color: rgba(255,255,255,0.8); margin-top: 0.3rem; }
 
-    .tabs { display: flex; border-bottom: 2px solid var(--border); }
+    .auth-body { padding: 1.75rem; }
+
+    .tabs { display: flex; border-bottom: 2px solid var(--border); margin: -1.75rem -1.75rem 1.5rem; }
     .tab { flex: 1; padding: 0.9rem; text-align: center; font-weight: 700; font-size: 0.95rem; cursor: pointer; color: var(--muted); border: none; background: none; transition: color 0.15s; }
     .tab.active { color: var(--blue); border-bottom: 2px solid var(--blue); margin-bottom: -2px; }
 
-    .panel { padding: 1.75rem; display: none; }
+    .panel { display: none; }
     .panel.active { display: block; }
 
     .form-group { margin-bottom: 1.1rem; }
@@ -54,16 +62,19 @@
     input:focus { border-color: var(--blue); }
     input::placeholder { color: #cbd5e1; }
 
-    .btn-submit { width: 100%; padding: 0.75rem; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: background 0.15s, transform 0.1s; margin-top: 0.5rem; }
+    .btn-submit { width: 100%; padding: 0.75rem; background: var(--blue); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: background 0.15s; margin-top: 0.5rem; }
     .btn-submit:hover { background: var(--blue-d); }
-    .btn-submit:active { transform: scale(0.98); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .msg { font-size: 0.88rem; padding: 0.65rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; display: none; }
     .msg.error { background: #fee2e2; color: #991b1b; display: block; }
     .msg.success { background: #dcfce7; color: #166534; display: block; }
 
-    .divider { text-align: center; color: var(--muted); font-size: 0.82rem; margin: 0.75rem 0; }
+    /* Child login big username field */
+    .child-username-input { font-size: 1.15rem !important; text-align: center; letter-spacing: 0.05em; }
+
+    /* Info box for parent registration */
+    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 0.75rem 0.9rem; font-size: 0.82rem; color: #1e40af; margin-bottom: 1rem; }
 
     footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 1.5rem; }
   </style>
@@ -86,65 +97,110 @@
     <div class="auth-header">
       <span class="emoji">⚽</span>
       <h1>World Cup 2026 Tipping</h1>
-      <p>Join the competition — it's free!</p>
+      <p>Who do you tip to lift the trophy?</p>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('register')">Register</button>
-      <button class="tab" onclick="switchTab('login')">Login</button>
-    </div>
+    <div class="auth-body">
+      <!-- Mode switcher -->
+      <div class="mode-switcher">
+        <div class="mode-btn active" id="mode-child" onclick="setMode('child')">
+          <span class="icon">🧒</span>
+          <span class="label">Player</span>
+          <span class="sub">I'm a student</span>
+        </div>
+        <div class="mode-btn" id="mode-parent" onclick="setMode('parent')">
+          <span class="icon">👩‍🏫</span>
+          <span class="label">Parent / Teacher</span>
+          <span class="sub">I manage accounts</span>
+        </div>
+      </div>
 
-    <!-- Register -->
-    <div class="panel active" id="panel-register">
-      <div class="msg" id="reg-msg"></div>
-      <div class="form-group">
-        <label for="reg-name">Display Name</label>
-        <input id="reg-name" type="text" placeholder="e.g. Alex J" maxlength="30" autocomplete="nickname"/>
+      <!-- ── Child login ──────────────────────────────────────── -->
+      <div id="child-section">
+        <div class="msg" id="child-msg"></div>
+        <div class="form-group">
+          <label for="child-username">Username</label>
+          <input id="child-username" type="text" class="child-username-input"
+                 placeholder="your username" autocomplete="username" autocapitalize="none"/>
+        </div>
+        <div class="form-group">
+          <label for="child-password">Password</label>
+          <input id="child-password" type="password" placeholder="your password" autocomplete="current-password"/>
+        </div>
+        <button class="btn-submit" onclick="childLogin()">Let's go! →</button>
       </div>
-      <div class="form-group">
-        <label for="reg-email">Email</label>
-        <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email"/>
-      </div>
-      <div class="form-group">
-        <label for="reg-password">Password</label>
-        <input id="reg-password" type="password" placeholder="At least 6 characters" autocomplete="new-password"/>
-      </div>
-      <button class="btn-submit" onclick="register()">Create Account →</button>
-    </div>
 
-    <!-- Login -->
-    <div class="panel" id="panel-login">
-      <div class="msg" id="login-msg"></div>
-      <div class="form-group">
-        <label for="login-email">Email</label>
-        <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+      <!-- ── Parent / Teacher section ────────────────────────── -->
+      <div id="parent-section" style="display:none">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('login')">Login</button>
+          <button class="tab" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Parent login -->
+        <div class="panel active" id="panel-login">
+          <div class="msg" id="login-msg"></div>
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" placeholder="Your password" autocomplete="current-password"/>
+          </div>
+          <button class="btn-submit" onclick="parentLogin()">Login →</button>
+        </div>
+
+        <!-- Parent register -->
+        <div class="panel" id="panel-register">
+          <div class="info-box">
+            👋 Register here to create and manage player accounts for your children or students.
+          </div>
+          <div class="msg" id="reg-msg"></div>
+          <div class="form-group">
+            <label for="reg-name">Your Name</label>
+            <input id="reg-name" type="text" placeholder="e.g. Mrs Steyn" maxlength="30" autocomplete="nickname"/>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <input id="reg-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <input id="reg-password" type="password" placeholder="At least 6 characters" autocomplete="new-password"/>
+          </div>
+          <button class="btn-submit" onclick="parentRegister()">Create Account →</button>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="login-password">Password</label>
-        <input id="login-password" type="password" placeholder="Your password" autocomplete="current-password"/>
-      </div>
-      <button class="btn-submit" onclick="login()">Login →</button>
     </div>
   </div>
 </main>
 
 <footer>Part of <a href="https://mrssteynsgames.netlify.app" style="color:inherit">Mrs Steyn's Games</a></footer>
 
-<script src="js/api.js"></script>
 <script>
 // Redirect if already logged in
 SB.getUser().then(user => {
   if (user) window.location.href = 'matches.html';
 });
 
-if (location.hash === '#login') switchTab('login');
+// Default to child login; switch to parent if hash says so
+if (location.hash === '#parent') setMode('parent');
+if (location.hash === '#register') { setMode('parent'); switchTab('register'); }
+
+function setMode(mode) {
+  document.getElementById('mode-child').classList.toggle('active', mode === 'child');
+  document.getElementById('mode-parent').classList.toggle('active', mode === 'parent');
+  document.getElementById('child-section').style.display   = mode === 'child'  ? '' : 'none';
+  document.getElementById('parent-section').style.display  = mode === 'parent' ? '' : 'none';
+}
 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', (i === 0 && tab === 'register') || (i === 1 && tab === 'login'));
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
   });
-  document.getElementById('panel-register').classList.toggle('active', tab === 'register');
   document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+  document.getElementById('panel-register').classList.toggle('active', tab === 'register');
 }
 
 function showMsg(id, text, type) {
@@ -153,35 +209,38 @@ function showMsg(id, text, type) {
   el.className = `msg ${type}`;
 }
 
-async function register() {
-  const name  = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass  = document.getElementById('reg-password').value;
+// ── Child login ──────────────────────────────────────────────────────────────
 
-  if (!name) return showMsg('reg-msg', 'Please enter a display name.', 'error');
-  if (!email) return showMsg('reg-msg', 'Please enter your email.', 'error');
-  if (pass.length < 6) return showMsg('reg-msg', 'Password must be at least 6 characters.', 'error');
+async function childLogin() {
+  const username = document.getElementById('child-username').value.trim().toLowerCase();
+  const password = document.getElementById('child-password').value;
+  if (!username || !password) return showMsg('child-msg', 'Please enter your username and password.', 'error');
 
-  const btn = document.querySelector('#panel-register .btn-submit');
-  btn.disabled = true; btn.textContent = 'Creating account…';
+  const btn = document.querySelector('#child-section .btn-submit');
+  btn.disabled = true; btn.textContent = 'Logging in…';
 
-  const { user, error } = await SB.signUp(email, pass);
-  if (error) {
-    showMsg('reg-msg', error, 'error');
-    btn.disabled = false; btn.textContent = 'Create Account →';
+  const res = await fetch('/.netlify/functions/child-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    showMsg('child-msg', data.error ?? 'Invalid username or password.', 'error');
+    btn.disabled = false; btn.textContent = 'Let\'s go! →';
     return;
   }
 
-  // Create profile row
-  if (user?.id) {
-    await SB.insert('profiles', { id: user.id, display_name: name });
-  }
-
-  showMsg('reg-msg', '🎉 Account created! Redirecting to fixtures…', 'success');
-  setTimeout(() => window.location.href = 'matches.html', 1500);
+  // Save the session returned by the function
+  SB.saveSession(data.session);
+  window.location.href = 'matches.html';
 }
 
-async function login() {
+// ── Parent login ─────────────────────────────────────────────────────────────
+
+async function parentLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-password').value;
   if (!email || !pass) return showMsg('login-msg', 'Please fill in all fields.', 'error');
@@ -198,11 +257,44 @@ async function login() {
   window.location.href = 'matches.html';
 }
 
+// ── Parent register ───────────────────────────────────────────────────────────
+
+async function parentRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-password').value;
+
+  if (!name)           return showMsg('reg-msg', 'Please enter your name.', 'error');
+  if (!email)          return showMsg('reg-msg', 'Please enter your email.', 'error');
+  if (pass.length < 6) return showMsg('reg-msg', 'Password must be at least 6 characters.', 'error');
+
+  const btn = document.querySelector('#panel-register .btn-submit');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  const { user, error } = await SB.signUp(email, pass);
+  if (error) {
+    showMsg('reg-msg', error, 'error');
+    btn.disabled = false; btn.textContent = 'Create Account →';
+    return;
+  }
+
+  if (user?.id) {
+    // Insert as parent account
+    await SB.insert('profiles', { id: user.id, display_name: name, account_type: 'parent' });
+  }
+
+  showMsg('reg-msg', '🎉 Account created! You can now log in and add players.', 'success');
+  setTimeout(() => { switchTab('login'); }, 2000);
+  btn.disabled = false; btn.textContent = 'Create Account →';
+}
+
+// Enter key support
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  const active = document.querySelector('.panel.active');
-  if (active?.id === 'panel-register') register();
-  else if (active?.id === 'panel-login') login();
+  const childVisible = document.getElementById('child-section').style.display !== 'none';
+  if (childVisible) { childLogin(); return; }
+  const loginActive = document.getElementById('panel-login').classList.contains('active');
+  if (loginActive) parentLogin(); else parentRegister();
 });
 </script>
 </body>

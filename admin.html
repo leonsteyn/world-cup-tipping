@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Players — World Cup 2026 Tipping</title>
+  <script src="js/env-config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/config.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1d4ed8; --blue-d: #1e3a8a; --gold: #f59e0b;
+      --bg: #f1f5f9; --card: #fff; --text: #1e293b; --muted: #64748b;
+      --border: #e2e8f0; --radius: 14px; --green: #16a34a; --red: #dc2626;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Nav */
+    #nav { background: var(--blue-d); color: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+    .nav-inner { max-width: 900px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; gap: 1rem; height: 56px; }
+    .nav-home { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.85rem; white-space: nowrap; }
+    .nav-home:hover { color: #fff; }
+    .nav-title { flex: 1; font-weight: 800; font-size: 1rem; color: #fff; text-align: center; }
+    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .nav-link { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; padding: 0.3rem 0.6rem; border-radius: 8px; }
+    .nav-link:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.4); color: rgba(255,255,255,0.8); padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+    .page-header { background: linear-gradient(135deg, var(--blue-d), var(--blue)); color: #fff; padding: 1.75rem 1.5rem; text-align: center; }
+    .page-header h1 { font-size: 1.4rem; font-weight: 900; }
+    .page-header p { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 0.3rem; }
+
+    main { max-width: 900px; margin: 2rem auto 4rem; padding: 0 1.25rem; }
+
+    /* Access denied */
+    .access-denied { text-align: center; padding: 4rem 1rem; }
+    .access-denied .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .access-denied h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .access-denied p { color: var(--muted); max-width: 380px; margin: 0 auto; }
+
+    /* Children list */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .section-header h2 { font-size: 1.1rem; font-weight: 800; }
+    .btn-add { background: var(--blue); color: #fff; border: none; padding: 0.5rem 1.1rem; border-radius: 99px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.15s; }
+    .btn-add:hover { background: var(--blue-d); }
+
+    .children-grid { display: grid; gap: 0.75rem; }
+    .child-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+    .child-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #6366f1); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
+    .child-info { flex: 1; min-width: 0; }
+    .child-name { font-weight: 700; font-size: 0.95rem; }
+    .child-username { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
+    .child-username span { background: #f1f5f9; border-radius: 6px; padding: 0.1rem 0.4rem; font-family: monospace; }
+    .child-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-icon { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.65rem; cursor: pointer; font-size: 0.82rem; color: var(--muted); transition: all 0.15s; }
+    .btn-icon:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-icon.danger:hover { border-color: var(--red); color: var(--red); }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; background: var(--card); border-radius: var(--radius); border: 2px dashed var(--border); color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border-radius: var(--radius); width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal-header { padding: 1.25rem 1.5rem 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 800; }
+    .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-body { padding: 1.25rem 1.5rem; }
+    .modal-footer { padding: 0 1.5rem 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-group input { width: 100%; border: 1.5px solid var(--border); border-radius: 9px; padding: 0.6rem 0.85rem; font-size: 0.95rem; color: var(--text); outline: none; transition: border-color 0.15s; }
+    .form-group input:focus { border-color: var(--blue); }
+    .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    .btn-primary { background: var(--blue); color: #fff; border: none; padding: 0.6rem 1.4rem; border-radius: 9px; font-weight: 700; font-size: 0.92rem; cursor: pointer; transition: background 0.15s; }
+    .btn-primary:hover { background: var(--blue-d); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-cancel { background: #f1f5f9; color: var(--text); border: none; padding: 0.6rem 1.2rem; border-radius: 9px; font-weight: 600; font-size: 0.92rem; cursor: pointer; }
+    .btn-cancel:hover { background: var(--border); }
+
+    .form-error { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .form-error.visible { display: block; }
+    .form-success { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+    .form-success.visible { display: block; }
+
+    /* Password toggle */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 2.5rem; }
+    .pw-toggle { position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; }
+
+    /* Delete confirm */
+    .confirm-name { font-weight: 700; }
+
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 2rem 1rem; }
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="https://mrssteynsgames.netlify.app" class="nav-home" title="Back to Mrs Steyn's Games">🎮 Mrs Steyn's Games</a>
+    <span class="nav-title">⚽ Player Admin</span>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">🏆 Leaderboard</a>
+      <button onclick="doSignOut()" class="btn-ghost">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>👥 Manage Players</h1>
+  <p>Add, edit or remove child/student players for World Cup 2026 Tipping</p>
+</div>
+
+<main id="main">
+  <div class="loading">Checking access…</div>
+</main>
+
+<!-- Add / Edit Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="modal-title">Add Player</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="modal-error"></div>
+      <div class="form-success" id="modal-success"></div>
+
+      <input type="hidden" id="edit-id"/>
+
+      <div class="form-group">
+        <label for="field-display-name">Display Name</label>
+        <input id="field-display-name" type="text" placeholder="e.g. Sarah" autocomplete="off"/>
+        <div class="form-hint">Shown on leaderboards and pick lists</div>
+      </div>
+
+      <div class="form-group" id="username-group">
+        <label for="field-username">Username</label>
+        <input id="field-username" type="text" placeholder="e.g. sarah2026" autocomplete="off"/>
+        <div class="form-hint">Letters, numbers, underscores and dots only. Child types this to log in.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="field-password" id="pw-label">Password</label>
+        <div class="pw-wrap">
+          <input id="field-password" type="password" placeholder="At least 6 characters" autocomplete="new-password"/>
+          <button type="button" class="pw-toggle" onclick="togglePw('field-password', this)">👁</button>
+        </div>
+        <div class="form-hint" id="pw-hint">Set the password the child will use to log in</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save-btn" onclick="saveChild()">Add Player</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="delete-overlay" onclick="closeDelete(event)">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3>Remove Player</h3>
+      <button class="modal-close" onclick="closeDelete()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to remove <span class="confirm-name" id="delete-name"></span>?</p>
+      <p style="margin-top:0.6rem;font-size:0.85rem;color:var(--muted)">Their picks and tipping history will also be deleted. This cannot be undone.</p>
+      <div class="form-error" id="delete-error" style="margin-top:0.75rem"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeDelete()">Cancel</button>
+      <button class="btn-primary" id="delete-confirm-btn" onclick="confirmDelete()" style="background:var(--red)">Remove</button>
+    </div>
+  </div>
+</div>
+
+<footer>Part of <a href="https://mrssteynsgames.netlify.app" style="color:inherit">Mrs Steyn's Games</a></footer>
+
+<script src="js/api.js"></script>
+<script>
+let currentUser = null;
+let deleteTargetId = null;
+
+async function init() {
+  currentUser = await SB.getUser();
+  if (!currentUser) {
+    window.location.href = 'auth.html';
+    return;
+  }
+
+  // Check parent status
+  const { data: profile } = await SB.getOne('profiles', `id=eq.${currentUser.id}&select=account_type,display_name`);
+  if (!profile || profile.account_type !== 'parent') {
+    document.getElementById('main').innerHTML = `
+      <div class="access-denied">
+        <div class="icon">🔒</div>
+        <h2>Parent/Teacher Account Required</h2>
+        <p>Only parent or teacher accounts can manage child players. Please sign in with a parent account.</p>
+      </div>`;
+    return;
+  }
+
+  renderPage();
+  loadChildren();
+}
+
+function renderPage() {
+  document.getElementById('main').innerHTML = `
+    <div class="section-header">
+      <h2>Your Players</h2>
+      <button class="btn-add" onclick="openAddModal()">＋ Add Player</button>
+    </div>
+    <div id="children-list"><div class="loading">Loading players…</div></div>`;
+}
+
+async function loadChildren() {
+  const token = SB.getToken();
+  const res = await fetch('/.netlify/functions/admin-children', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const list = document.getElementById('children-list');
+
+  if (!res.ok) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Failed to load players.</p></div>`;
+    return;
+  }
+
+  const children = await res.json();
+
+  if (!children.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">👧🧒</div>
+        <p>No players yet. Click <strong>Add Player</strong> to get started.</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = `<div class="children-grid">${children.map(childCard).join('')}</div>`;
+}
+
+function childCard(c) {
+  const initial = (c.display_name ?? '?')[0].toUpperCase();
+  return `
+    <div class="child-card" id="card-${c.id}">
+      <div class="child-avatar">${initial}</div>
+      <div class="child-info">
+        <div class="child-name">${esc(c.display_name)}</div>
+        <div class="child-username">Username: <span>${esc(c.username)}</span></div>
+      </div>
+      <div class="child-actions">
+        <button class="btn-icon" onclick="openEditModal('${c.id}','${esc(c.display_name)}','${esc(c.username)}')">✏️ Edit</button>
+        <button class="btn-icon danger" onclick="openDeleteModal('${c.id}','${esc(c.display_name)}')">🗑 Remove</button>
+      </div>
+    </div>`;
+}
+
+// ── Add / Edit Modal ─────────────────────────────────────────────────────────
+
+function openAddModal() {
+  document.getElementById('modal-title').textContent = 'Add Player';
+  document.getElementById('modal-save-btn').textContent = 'Add Player';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('field-display-name').value = '';
+  document.getElementById('field-username').value = '';
+  document.getElementById('field-password').value = '';
+  document.getElementById('username-group').style.display = '';
+  document.getElementById('pw-label').textContent = 'Password';
+  document.getElementById('pw-hint').textContent = 'Set the password the child will use to log in';
+  clearModalMessages();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('field-display-name').focus();
+}
+
+function openEditModal(id, displayName, username) {
+  document.getElementById('modal-title').textContent = 'Edit Player';
+  document.getElementById('modal-save-btn').textContent = 'Save Changes';
+  document.getElementById('edit-id').value = id;
+  document.getElementById('field-display-name').value = displayName;
+  document.getElementById('field-username').value = username;
+  document.getElementById('field-password').value = '';
+  document.getElementById('username-group').style.display = '';
+  document.getElementById('pw-label').textContent = 'New Password';
+  document.getElementById('pw-hint').textContent = 'Leave blank to keep the existing password';
+  clearModalMessages();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('field-display-name').focus();
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+async function saveChild() {
+  const id = document.getElementById('edit-id').value;
+  const display_name = document.getElementById('field-display-name').value.trim();
+  const username = document.getElementById('field-username').value.trim();
+  const password = document.getElementById('field-password').value;
+  const btn = document.getElementById('modal-save-btn');
+
+  clearModalMessages();
+
+  if (!display_name) return showModalError('Display name is required.');
+  if (!username) return showModalError('Username is required.');
+  if (!id && !password) return showModalError('Password is required for new players.');
+  if (password && password.length < 6) return showModalError('Password must be at least 6 characters.');
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const token = SB.getToken();
+  const isEdit = !!id;
+
+  const body = isEdit
+    ? { id, display_name, username, ...(password ? { password } : {}) }
+    : { display_name, username, password };
+
+  const res = await fetch('/.netlify/functions/admin-children', {
+    method: isEdit ? 'PATCH' : 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  btn.disabled = false;
+  btn.textContent = isEdit ? 'Save Changes' : 'Add Player';
+
+  if (!res.ok) {
+    const err = await res.json();
+    return showModalError(err.error ?? 'Something went wrong. Please try again.');
+  }
+
+  showModalSuccess(isEdit ? 'Player updated!' : 'Player added!');
+  setTimeout(() => {
+    document.getElementById('modal-overlay').classList.remove('open');
+    loadChildren();
+  }, 900);
+}
+
+// ── Delete Modal ─────────────────────────────────────────────────────────────
+
+function openDeleteModal(id, name) {
+  deleteTargetId = id;
+  document.getElementById('delete-name').textContent = name;
+  document.getElementById('delete-error').classList.remove('visible');
+  document.getElementById('delete-overlay').classList.add('open');
+}
+
+function closeDelete(e) {
+  if (e && e.target !== document.getElementById('delete-overlay')) return;
+  document.getElementById('delete-overlay').classList.remove('open');
+}
+
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Removing…';
+
+  const token = SB.getToken();
+  const res = await fetch(`/.netlify/functions/admin-children?id=${deleteTargetId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Remove';
+
+  if (!res.ok) {
+    const err = await res.json();
+    document.getElementById('delete-error').textContent = err.error ?? 'Failed to remove player.';
+    document.getElementById('delete-error').classList.add('visible');
+    return;
+  }
+
+  document.getElementById('delete-overlay').classList.remove('open');
+  loadChildren();
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function clearModalMessages() {
+  document.getElementById('modal-error').classList.remove('visible');
+  document.getElementById('modal-success').classList.remove('visible');
+}
+
+function showModalError(msg) {
+  const el = document.getElementById('modal-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function showModalSuccess(msg) {
+  const el = document.getElementById('modal-success');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
+
+async function doSignOut() {
+  await SB.signOut();
+  window.location.href = 'index.html';
+}
+
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>
