@@ -45,6 +45,8 @@ const TEAMS = {
   'Panama':                   { rank: 35,  flag: '🇵🇦' },
   'Honduras':                 { rank: 77,  flag: '🇭🇳' },
   'Haiti':                    { rank: 83,  flag: '🇭🇹' },
+  'Curaçao':                  { rank: 85,  flag: '🇨🇼' },
+  'Curacao':                  { rank: 85,  flag: '🇨🇼' },
 
   // ── CAF (9) ──────────────────────────────────────────────────────────────
   'Morocco':                  { rank: 8,   flag: '🇲🇦' },
@@ -60,6 +62,8 @@ const TEAMS = {
   "Côte d'Ivoire":            { rank: 58,  flag: '🇨🇮' },
   'Ivory Coast':              { rank: 58,  flag: '🇨🇮' },
   'Cape Verde':               { rank: 67,  flag: '🇨🇻' },
+  'Cape Verde Islands':       { rank: 67,  flag: '🇨🇻' },
+  'South Africa':             { rank: 66,  flag: '🇿🇦' },
   'Senegal':                  { rank: 14,  flag: '🇸🇳' },
 
   // ── AFC (8 + Iraq via playoff) ───────────────────────────────────────────
