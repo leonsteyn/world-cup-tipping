@@ -672,7 +672,7 @@ async function addMember(poolId) {
   if (!res.ok) {
     const text = await res.text();
     console.error('addMember failed:', text);
-    alert('Could not add player. They may already be in this pool, or you may not have permission.');
+    alert('Add failed:\n' + text);
     return;
   }
   await loadPools();
