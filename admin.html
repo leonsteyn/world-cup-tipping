@@ -468,7 +468,7 @@ async function renderMyPools() {
 
   // Load members for each pool
   const memberData = await Promise.all(myPools.map(p =>
-    SB.get('pool_members', `pool_id=eq.${p.id}&select=player_id,added_by,profiles(id,display_name)`)
+    SB.get('pool_members', `pool_id=eq.${p.id}&select=player_id,added_by,profiles!player_id(id,display_name)`)
   ));
 
   el.innerHTML = `<div class="card-list">${myPools.map((p, i) =>
