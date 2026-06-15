@@ -92,6 +92,7 @@ const TEAMS = {
  */
 function getFlag(teamName, countryCode) {
   if (teamName && TEAMS[teamName]) return TEAMS[teamName].flag;
+  if (teamName && !TEAMS[teamName]) console.warn('Missing team in TEAMS lookup:', JSON.stringify(teamName));
   if (countryCode && countryCode.length === 2) {
     // Generate flag emoji from ISO 3166-1 alpha-2 code
     return [...countryCode.toUpperCase()]
