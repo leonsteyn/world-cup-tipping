@@ -104,6 +104,32 @@
     .pick-display .pick-flag { font-size: 1.2rem; }
     .pick-display .pick-outcome { font-size: 1.1rem; }
 
+    /* All tips panel */
+    .all-tips-toggle { width: 100%; background: none; border: none; border-top: 1px solid var(--border); padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 600; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: background 0.15s, color 0.15s; }
+    .all-tips-toggle:hover { background: #f8fafc; color: var(--blue); }
+    .all-tips-toggle .chevron { font-size: 0.65rem; transition: transform 0.2s; display: inline-block; }
+    .all-tips-toggle.open .chevron { transform: rotate(180deg); }
+
+    .all-tips-panel { display: none; border-top: 1px solid var(--border); padding: 0.85rem 1rem; }
+    .all-tips-panel.open { display: block; }
+
+    .tips-summary { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .tips-bar-item { flex: 1; background: #f8fafc; border-radius: 8px; padding: 0.45rem 0.6rem; text-align: center; font-size: 0.78rem; border: 1.5px solid var(--border); }
+    .tips-bar-item.is-result { border-color: var(--green); background: #f0fdf4; }
+    .tips-bar-item .bar-label { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tips-bar-item .bar-count { font-size: 1.1rem; font-weight: 900; color: var(--blue-d); margin-top: 0.1rem; }
+    .tips-bar-item.is-result .bar-count { color: var(--green); }
+
+    .tips-list { display: flex; flex-direction: column; gap: 0.3rem; }
+    .tip-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0.5rem; border-radius: 7px; font-size: 0.83rem; }
+    .tip-row.tip-correct { background: #f0fdf4; }
+    .tip-row.tip-wrong   { background: #fef2f2; }
+    .tip-row.tip-none    { background: #f8fafc; opacity: 0.65; }
+    .tip-row .tr-name    { flex: 1; font-weight: 600; }
+    .tip-row .tr-pick    { color: var(--muted); font-size: 0.8rem; }
+    .tip-row .tr-icon    { font-size: 0.95rem; }
+    .tips-loading { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 0.5rem; }
+
     .tip-locked { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0.4rem 0; }
 
     .login-prompt { font-size: 0.82rem; color: var(--muted); text-align: center; padding: 0.25rem; }
@@ -316,28 +342,26 @@ function openTipHTML(m, myPick, flag1, flag2) {
 }
 
 function finishedTipHTML(m, myPick, flag1, flag2) {
-  if (!myPick) {
-    return `<div class="tip-section">
-      <div class="pick-display no-pick">No tip submitted</div>
-    </div>`;
-  }
-
-  const isCorrect = myPick === m.result;
-  const pickLabel = myPick === 'TEAM1' ? `${flag1} ${m.team1}`
-                  : myPick === 'TEAM2' ? `${flag2} ${m.team2}`
-                  : '🤝 Draw';
-  const pickFlag  = myPick === 'TEAM1' ? flag1
-                  : myPick === 'TEAM2' ? flag2
-                  : '';
-
-  return `<div class="tip-section">
-    <div class="pick-display ${isCorrect ? 'correct' : 'wrong'}">
+  const myPickHTML = (() => {
+    if (!myPick) {
+      return `<div class="pick-display no-pick">No tip submitted</div>`;
+    }
+    const isCorrect = myPick === m.result;
+    const pickFlag  = myPick === 'TEAM1' ? flag1 : myPick === 'TEAM2' ? flag2 : '';
+    const pickName  = myPick === 'TEAM1' ? m.team1 : myPick === 'TEAM2' ? m.team2 : 'Draw';
+    return `<div class="pick-display ${isCorrect ? 'correct' : 'wrong'}">
       <span>Your tip:</span>
       ${pickFlag ? `<span class="pick-flag">${pickFlag}</span>` : ''}
-      <span>${escHtml(myPick === 'DRAW' ? 'Draw' : myPick === 'TEAM1' ? m.team1 : m.team2)}</span>
+      <span>${escHtml(pickName)}</span>
       <span class="pick-outcome">${isCorrect ? '✅' : '❌'}</span>
-    </div>
-  </div>`;
+    </div>`;
+  })();
+
+  return `<div class="tip-section">${myPickHTML}</div>
+    <button class="all-tips-toggle" onclick="toggleAllTips(${m.id}, this)" data-match-id="${m.id}">
+      👥 See all tips <span class="chevron">▼</span>
+    </button>
+    <div class="all-tips-panel" id="all-tips-${m.id}"></div>`;
 }
 
 async function submitPick(matchId, pick) {
@@ -374,6 +398,103 @@ async function syncMatches(showFeedback = true) {
     }
   } catch (_) { /* silent fail — function may not be deployed yet */ }
   if (showFeedback && label) label.textContent = 'Refresh';
+}
+
+// ── All tips panel ───────────────────────────────────────────────────────
+
+const loadedTips = {}; // cache per match
+
+async function toggleAllTips(matchId, btn) {
+  const panel = document.getElementById(`all-tips-${matchId}`);
+  const isOpen = panel.classList.contains('open');
+
+  if (isOpen) {
+    panel.classList.remove('open');
+    btn.classList.remove('open');
+    return;
+  }
+
+  panel.classList.add('open');
+  btn.classList.add('open');
+
+  if (loadedTips[matchId]) {
+    renderAllTips(matchId, loadedTips[matchId]);
+    return;
+  }
+
+  panel.innerHTML = `<div class="tips-loading">Loading…</div>`;
+
+  // Fetch all picks for this match joined with profile display names
+  const { data } = await SB.get('picks', `match_id=eq.${matchId}&select=pick,player_id,profiles(display_name)`);
+  // Also fetch all profiles so we can show users who didn't pick
+  const { data: profiles } = await SB.get('profiles', `select=id,display_name`);
+
+  const match = allMatches.find(m => m.id === matchId);
+  loadedTips[matchId] = { picks: data ?? [], profiles: profiles ?? [], match };
+  renderAllTips(matchId, loadedTips[matchId]);
+}
+
+function renderAllTips(matchId, { picks, profiles, match }) {
+  const panel = document.getElementById(`all-tips-${matchId}`);
+  if (!panel) return;
+
+  const flag1 = getFlag(match.team1, match.team1_country_code);
+  const flag2 = getFlag(match.team2, match.team2_country_code);
+
+  // Build pick map: player_id → pick
+  const pickMap = {};
+  picks.forEach(p => { pickMap[p.player_id] = p.pick; });
+
+  // Count picks for summary bar
+  const counts = { TEAM1: 0, DRAW: 0, TEAM2: 0, none: 0 };
+  profiles.forEach(p => {
+    const pick = pickMap[p.id];
+    if (pick) counts[pick] = (counts[pick] ?? 0) + 1;
+    else counts.none++;
+  });
+
+  const total = profiles.length;
+  const pct = n => total ? Math.round(n / total * 100) : 0;
+
+  const summaryItems = [
+    { value: 'TEAM1', flag: flag1, name: match.team1, count: counts.TEAM1 },
+    { value: 'DRAW',  flag: '🤝',  name: 'Draw',      count: counts.DRAW  },
+    { value: 'TEAM2', flag: flag2, name: match.team2, count: counts.TEAM2 },
+  ];
+
+  const summaryHTML = `<div class="tips-summary">${summaryItems.map(item => {
+    const isResult = item.value === match.result;
+    return `<div class="tips-bar-item${isResult ? ' is-result' : ''}">
+      <div class="bar-label">${item.flag} ${escHtml(item.name)}${isResult ? ' ✓' : ''}</div>
+      <div class="bar-count">${item.count}</div>
+      <div style="font-size:0.7rem;color:var(--muted)">${pct(item.count)}%</div>
+    </div>`;
+  }).join('')}</div>`;
+
+  // Rows: one per profile, sorted correct first then name
+  const rows = profiles
+    .map(p => ({ ...p, pick: pickMap[p.id] ?? null }))
+    .sort((a, b) => {
+      const aCorrect = a.pick === match.result ? 0 : a.pick ? 1 : 2;
+      const bCorrect = b.pick === match.result ? 0 : b.pick ? 1 : 2;
+      if (aCorrect !== bCorrect) return aCorrect - bCorrect;
+      return (a.display_name ?? '').localeCompare(b.display_name ?? '');
+    })
+    .map(p => {
+      const isCorrect = p.pick && p.pick === match.result;
+      const isWrong   = p.pick && p.pick !== match.result;
+      const pickFlag  = p.pick === 'TEAM1' ? flag1 : p.pick === 'TEAM2' ? flag2 : p.pick === 'DRAW' ? '🤝' : '';
+      const pickName  = p.pick === 'TEAM1' ? match.team1 : p.pick === 'TEAM2' ? match.team2 : p.pick === 'DRAW' ? 'Draw' : null;
+      const rowClass  = isCorrect ? 'tip-correct' : isWrong ? 'tip-wrong' : 'tip-none';
+      const icon      = isCorrect ? '✅' : isWrong ? '❌' : '–';
+      return `<div class="tip-row ${rowClass}">
+        <span class="tr-name">${escHtml(p.display_name ?? 'Unknown')}</span>
+        ${pickName ? `<span class="tr-pick">${pickFlag} ${escHtml(pickName)}</span>` : '<span class="tr-pick" style="color:#cbd5e1">No tip</span>'}
+        <span class="tr-icon">${icon}</span>
+      </div>`;
+    }).join('');
+
+  panel.innerHTML = summaryHTML + `<div class="tips-list">${rows}</div>`;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────
