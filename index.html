@@ -233,7 +233,7 @@ async function renderLeaderboard() {
 
   // 1. Get pool members with profiles
   const { data: members } = await SB.get('pool_members',
-    `pool_id=eq.${activePool.id}&select=player_id,profiles(id,display_name)`
+    `pool_id=eq.${activePool.id}&select=player_id,profiles!player_id(id,display_name)`
   );
 
   if (!members?.length) {
