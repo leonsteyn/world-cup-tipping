@@ -671,8 +671,13 @@ async function addMember(poolId) {
   });
   if (!res.ok) {
     const text = await res.text();
-    console.error('addMember failed:', text);
-    alert('Add failed:\n' + text);
+    const err = (() => { try { return JSON.parse(text); } catch { return null; } })();
+    if (err?.code === '23505') {
+      alert('That player is already in this pool.');
+    } else {
+      console.error('addMember failed:', text);
+      alert('Could not add player: ' + (err?.message ?? text));
+    }
     return;
   }
   await loadPools();
