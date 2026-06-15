@@ -280,9 +280,10 @@
 
 <script src="js/api.js"></script>
 <script>
-let parentId    = null;
-let myChildren  = [];  // child_accounts rows this parent owns
-let myPools     = [];
+let parentId          = null;
+let parentDisplayName = '';
+let myChildren        = [];  // child_accounts rows this parent owns
+let myPools           = [];
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
@@ -301,11 +302,14 @@ async function init() {
     return;
   }
 
-  parentId = user.id;
+  parentId          = user.id;
+  parentDisplayName = profile.display_name ?? 'Me';
   document.getElementById('access-check').style.display = 'none';
   document.getElementById('tab-players').classList.add('active');
 
-  await Promise.all([loadPlayers(), loadPools()]);
+  // Sequential: players must load first so myChildren is populated when pool cards render
+  await loadPlayers();
+  await loadPools();
 }
 
 function switchTab(tab) {
@@ -485,16 +489,22 @@ function poolCard(pool, members) {
     </div>`;
   }).join('') || '<div style="font-size:0.82rem;color:var(--muted);padding:0.3rem 0">No players yet</div>';
 
-  // Children not already in this pool
+  // Build eligible list: children + the parent themselves if not already a member
   const memberIds = new Set(members.map(m => m.player_id));
-  const eligible  = myChildren.filter(c => !memberIds.has(c.id));
-  const addRow    = eligible.length ? `
+  const parentEntry = memberIds.has(parentId)
+    ? null
+    : { id: parentId, display_name: `${parentDisplayName} (you)` };
+  const eligible = [
+    ...(parentEntry ? [parentEntry] : []),
+    ...myChildren.filter(c => !memberIds.has(c.id)),
+  ];
+  const addRow = eligible.length ? `
     <div class="add-member-row">
       <select id="add-select-${pool.id}">
         <option value="">— Select a player to add —</option>
         ${eligible.map(c => `<option value="${c.id}">${esc(c.display_name)}</option>`).join('')}
       </select>
-      <button class="btn-sm primary" onclick="addMember('${pool.id}')">Add</button>
+      <button class="btn-sm primary" onclick="addMember('${pool.id}', this)">Add</button>
     </div>` : '';
 
   return `
@@ -652,14 +662,20 @@ function confirmDeletePool(id, name) {
 async function addMember(poolId) {
   const sel      = document.getElementById(`add-select-${poolId}`);
   const playerId = sel?.value;
-  if (!playerId) return;
+  if (!playerId) { alert('Please select a player first.'); return; }
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/pool_members`, {
     method: 'POST',
     headers: { ...authHeaders(), Prefer: 'return=minimal' },
     body: JSON.stringify({ pool_id: poolId, player_id: playerId, added_by: parentId }),
   });
-  if (res.ok) await loadPools();
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('addMember failed:', text);
+    alert('Could not add player. They may already be in this pool, or you may not have permission.');
+    return;
+  }
+  await loadPools();
 }
 
 async function removeMember(poolId, playerId, playerName) {
@@ -672,18 +688,16 @@ async function removeMember(poolId, playerId, playerName) {
 
 // Join an open pool (add your own children)
 async function openJoinPoolModal(poolId, poolName) {
-  if (!myChildren.length) {
-    alert('You have no players to add. Create players first in the Players tab.');
-    return;
-  }
-
   // Get current members to exclude already-joined ones
   const { data: members } = await SB.get('pool_members', `pool_id=eq.${poolId}&select=player_id`);
-  const memberIds  = new Set((members ?? []).map(m => m.player_id));
-  const eligible   = myChildren.filter(c => !memberIds.has(c.id));
+  const memberIds = new Set((members ?? []).map(m => m.player_id));
+  const eligible = [
+    ...(!memberIds.has(parentId) ? [{ id: parentId, display_name: `${parentDisplayName} (you)` }] : []),
+    ...myChildren.filter(c => !memberIds.has(c.id)),
+  ];
 
   if (!eligible.length) {
-    alert('All your players are already in this pool.');
+    alert('You and all your players are already in this pool.');
     return;
   }
 
