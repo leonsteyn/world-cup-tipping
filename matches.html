@@ -89,15 +89,20 @@
     }
     .tip-btn:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
     .tip-btn.selected { border-color: var(--blue); background: var(--blue); color: #fff; }
-    .tip-btn.correct  { border-color: var(--green); background: var(--green); color: #fff; }
-    .tip-btn.wrong    { border-color: #f1f5f9; background: #f1f5f9; color: #cbd5e1; }
-    .tip-btn.result-marker { border-color: #94a3b8; background: #f8fafc; color: #475569; }
     .tip-btn:disabled { cursor: not-allowed; }
 
     .tip-result { font-size: 0.82rem; margin-top: 0.5rem; color: var(--muted); text-align: center; }
     .tip-result .correct { color: var(--green); font-weight: 700; }
     .tip-result .wrong   { color: var(--red); font-weight: 700; }
     .tip-result .pending { color: var(--muted); }
+
+    /* Finished match pick display */
+    .pick-display { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.6rem 1rem; border-radius: 10px; font-size: 0.9rem; font-weight: 700; }
+    .pick-display.correct { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+    .pick-display.wrong   { background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; }
+    .pick-display.no-pick { background: #f8fafc; border: 1.5px solid var(--border); color: var(--muted); font-weight: 500; font-size: 0.85rem; }
+    .pick-display .pick-flag { font-size: 1.2rem; }
+    .pick-display .pick-outcome { font-size: 1.1rem; }
 
     .tip-locked { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0.4rem 0; }
 
@@ -311,35 +316,28 @@ function openTipHTML(m, myPick, flag1, flag2) {
 }
 
 function finishedTipHTML(m, myPick, flag1, flag2) {
-  const result = m.result;
-  const r1 = rankLabel(m.team1);
-  const r2 = rankLabel(m.team2);
-  const opts = [
-    { value: 'TEAM1', label: `${flag1} ${m.team1}${r1 ? ' ' + r1 : ''}` },
-    { value: 'DRAW',  label: 'Draw' },
-    { value: 'TEAM2', label: `${flag2} ${m.team2}${r2 ? ' ' + r2 : ''}` },
-  ];
-
-  const btns = opts.map(o => {
-    const isResult = o.value === result;
-    const isPick   = o.value === myPick;
-    let cls = 'tip-btn';
-    if (isPick && isResult) cls += ' correct';
-    else if (isPick && !isResult) cls += ' wrong';
-    else if (isResult) cls += ' result-marker';
-    else cls += ' wrong';
-    return `<button class="${cls}" disabled>${escHtml(o.label)}${isResult ? ' ✓' : ''}</button>`;
-  }).join('');
-
-  let resultLine = '';
-  if (myPick) {
-    if (myPick === result) resultLine = `<div class="tip-result"><span class="correct">✅ Correct! +1 point</span></div>`;
-    else resultLine = `<div class="tip-result"><span class="wrong">❌ Incorrect — better luck next time</span></div>`;
-  } else {
-    resultLine = `<div class="tip-result"><span class="pending">No tip submitted</span></div>`;
+  if (!myPick) {
+    return `<div class="tip-section">
+      <div class="pick-display no-pick">No tip submitted</div>
+    </div>`;
   }
 
-  return `<div class="tip-section"><div class="tip-buttons">${btns}</div>${resultLine}</div>`;
+  const isCorrect = myPick === m.result;
+  const pickLabel = myPick === 'TEAM1' ? `${flag1} ${m.team1}`
+                  : myPick === 'TEAM2' ? `${flag2} ${m.team2}`
+                  : '🤝 Draw';
+  const pickFlag  = myPick === 'TEAM1' ? flag1
+                  : myPick === 'TEAM2' ? flag2
+                  : '';
+
+  return `<div class="tip-section">
+    <div class="pick-display ${isCorrect ? 'correct' : 'wrong'}">
+      <span>Your tip:</span>
+      ${pickFlag ? `<span class="pick-flag">${pickFlag}</span>` : ''}
+      <span>${escHtml(myPick === 'DRAW' ? 'Draw' : myPick === 'TEAM1' ? m.team1 : m.team2)}</span>
+      <span class="pick-outcome">${isCorrect ? '✅' : '❌'}</span>
+    </div>
+  </div>`;
 }
 
 async function submitPick(matchId, pick) {
