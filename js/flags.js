@@ -30,6 +30,7 @@ const TEAMS = {
   'Bosnia & Herzegovina':     { rank: 64,  flag: '🇧🇦' },
   'Bosnia and Herzegovinia':  { rank: 64,  flag: '🇧🇦' },
   'Bosnia & Herzegovinia':    { rank: 64,  flag: '🇧🇦' },
+  'Bosnia-Herzegovina':       { rank: 64,  flag: '🇧🇦' },
 
   // ── CONMEBOL (6) ─────────────────────────────────────────────────────────
   'Argentina':                { rank: 3,   flag: '🇦🇷' },
